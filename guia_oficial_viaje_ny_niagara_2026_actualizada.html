@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Asistente de Viaje NY & Niágara 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .chk-line input:checked + label { text-decoration: line-through; opacity: 0.55; }
+        .act-done .act-text { text-decoration: line-through; opacity: 0.55; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
+
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-lg border-b border-slate-800">
+        <div class="max-w-3xl mx-auto px-4 pt-3 flex items-center space-x-3">
+            <div class="bg-sky-500 text-white p-2 rounded-xl shadow-md"><i class="fa-solid fa-map-location-dot text-lg"></i></div>
+            <div class="flex-1 min-w-0">
+                <h1 class="text-base font-black tracking-tight leading-tight truncate">
+                    NY &amp; Niágara <span class="bg-amber-400 text-slate-900 text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">Asistente 2026</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 font-medium">13 – 26 de Septiembre • 3 Pasajeros</p>
+            </div>
+            <button onclick="resetAll()" title="Reiniciar progreso guardado" class="text-slate-500 hover:text-rose-400 p-3 min-h-[44px] min-w-[44px]"><i class="fa-solid fa-rotate-left text-sm"></i></button>
+        </div>
+        <nav class="max-w-3xl mx-auto px-2 mt-2 grid grid-cols-4 border-t border-slate-800/80 text-xs sm:text-sm font-bold">
+            <button onclick="switchTab('hoy')" id="tab-hoy" class="py-3 min-h-[48px] text-center border-b-2 border-sky-400 text-sky-400 transition-all"><i class="fa-solid fa-house mr-1"></i>HOY</button>
+            <button onclick="switchTab('dias')" id="tab-dias" class="py-3 min-h-[48px] text-center border-b-2 border-transparent text-slate-400 transition-all"><i class="fa-solid fa-calendar-days mr-1"></i>DÍAS</button>
+            <button onclick="switchTab('map')" id="tab-map" class="py-3 min-h-[48px] text-center border-b-2 border-transparent text-slate-400 transition-all"><i class="fa-solid fa-map-pin mr-1"></i>MAPA</button>
+            <button onclick="switchTab('extras')" id="tab-extras" class="py-3 min-h-[48px] text-center border-b-2 border-transparent text-slate-400 transition-all"><i class="fa-solid fa-star mr-1"></i>EXTRAS</button>
+        </nav>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-3 mt-4">
+
+        <!-- ===== HOY ===== -->
+        <section id="view-hoy" class="space-y-4"></section>
+
+        <!-- ===== DÍAS ===== -->
+        <section id="view-dias" class="hidden space-y-4">
+            <div class="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex space-x-2 overflow-x-auto no-scrollbar py-1" id="dayButtonsContainer"></div>
+            </div>
+            <div id="dayDetailCard" class="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4 sm:p-6"></div>
+        </section>
+
+        <!-- ===== MAPA ===== -->
+        <section id="view-map" class="hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-map-pin text-sky-600 mr-2"></i>Puntos Clave &amp; Navegación</h2>
+                <div class="flex space-x-1.5 overflow-x-auto no-scrollbar mb-3 py-1">
+                    <button onclick="drawMarkers('all')" class="bg-slate-800 text-white text-xs px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full whitespace-nowrap font-medium">Todos</button>
+                    <button onclick="drawMarkers('cinema')" class="bg-amber-500 text-slate-900 text-xs px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full whitespace-nowrap font-bold">🎬 Cine &amp; Series</button>
+                    <button onclick="drawMarkers('attraction')" class="bg-emerald-100 text-emerald-800 text-xs px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full whitespace-nowrap font-medium">Barrios &amp; Monumentos</button>
+                    <button onclick="drawMarkers('transport')" class="bg-sky-100 text-sky-800 text-xs px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full whitespace-nowrap font-medium">Estaciones</button>
+                    <button onclick="drawMarkers('shopping')" class="bg-purple-100 text-purple-800 text-xs px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full whitespace-nowrap font-medium">🛍️ Tiendas</button>
+                    <button onclick="drawMarkers('basketball')" class="bg-orange-100 text-orange-800 text-xs px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full whitespace-nowrap font-medium">🏀 Canchas</button>
+                </div>
+                <div id="map" class="w-full h-[450px] sm:h-[500px] rounded-xl z-10 border border-slate-200 shadow-inner"></div>
+                <div class="mt-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600">
+                    <i class="fa-solid fa-circle-info text-sky-600 mr-1.5"></i>Haz clic en cualquier marcador para ver detalles y el día correspondiente.
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== EXTRAS ===== -->
+        <section id="view-extras" class="hidden space-y-4">
+            <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-4 gap-1.5 text-[11px] font-bold text-center">
+                <button onclick="switchExtra('prep')" id="xtab-prep" class="py-3 min-h-[44px] rounded-xl bg-slate-900 text-white shadow-sm">📋 Preparativos</button>
+                <button onclick="switchExtra('cinema')" id="xtab-cinema" class="py-3 min-h-[44px] rounded-xl bg-slate-100 text-slate-700">🎬 Cine</button>
+                <button onclick="switchExtra('food')" id="xtab-food" class="py-3 min-h-[44px] rounded-xl bg-slate-100 text-slate-700">🍜 Gastronomía</button>
+                <button onclick="switchExtra('stores')" id="xtab-stores" class="py-3 min-h-[44px] rounded-xl bg-slate-100 text-slate-700">🛍️ Compras</button>
+            </div>
+
+            <div id="xview-prep" class="space-y-4">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200">
+                    <h2 class="text-sm font-extrabold text-slate-900 mb-1"><i class="fa-solid fa-clipboard-check text-sky-600 mr-2"></i>Checklist Pre-Viaje (reservas &amp; documentos)</h2>
+                    <p class="text-xs text-slate-500 mb-3">Contiene reservas que se hacen ANTES de arrancar. El progreso se guarda en este navegador.</p>
+                    <div class="space-y-2" id="prepChecklist"></div>
+                </div>
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200">
+                    <h2 class="text-sm font-extrabold text-slate-900 mb-3"><i class="fa-solid fa-cloud-rain text-sky-700 mr-2"></i>Plan B si llueve (día por día)</h2>
+                    <div id="rainList" class="space-y-2"></div>
+                </div>
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200">
+                    <h2 class="text-sm font-extrabold text-slate-900 mb-2"><i class="fa-solid fa-scale-balanced text-amber-500 mr-2"></i>Día 3 — Vuelo vs Tren/Bus a Niágara</h2>
+                    <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                        <div class="bg-sky-50 border border-sky-100 rounded-xl p-3"><strong>✈️ Vuelo JFK/LGA → Buffalo (opción del plan):</strong> ~1h 15m de vuelo; puerta a puerta con traslados ≈ 3.5–4h. Costo aprox. $80–200/pax. Ojo con equipaje: las aerolíneas low-cost cobran extra.</div>
+                        <div class="bg-slate-50 border rounded-xl p-3"><strong>🚌 Bus Coach (Port Authority → Niagara Falls):</strong> ~7–8h, $30–60/pax. Llega directo al centro de las cataratas, pero consume el día entero.</div>
+                        <div class="bg-slate-50 border rounded-xl p-3"><strong>🚆 Tren Amtrak (Maple Leaf):</strong> ~9h, $60–100/pax. Lento y con retrasos frecuentes; panorámico pero poco práctico en ventana corta.</div>
+                        <p class="text-amber-800 font-bold">Veredicto: con solo 3 días en Niágara y hotel pagado, el vuelo aprovecha el tiempo. El bus ahorra ~$150 en el grupo si el presupuesto aprieta.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="xview-cinema" class="hidden space-y-4">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-slate-200">
+                    <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between gap-2 items-center">
+                        <h2 class="text-sm font-extrabold text-slate-900"><i class="fa-solid fa-clapperboard text-amber-500 mr-1.5"></i>Locaciones de Cine &amp; Series</h2>
+                        <span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-2.5 py-1 rounded-full border border-amber-200 whitespace-nowrap">25+ Escenas</span>
+                    </div>
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="movieSearchInput" onkeyup="filterMovieCards()" placeholder="Buscar película o serie (Spider-Man, Friends…)"
+                            class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-1 mb-4 text-[11px]">
+                        <button onclick="filterMovieCategory('all')" id="mcat-all" class="bg-slate-900 text-white px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full font-medium whitespace-nowrap shadow-sm">Todas</button>
+                        <button onclick="filterMovieCategory('marvel-dc')" id="mcat-marvel-dc" class="bg-slate-100 text-slate-700 px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full font-medium whitespace-nowrap">Superhéroes</button>
+                        <button onclick="filterMovieCategory('classics')" id="mcat-classics" class="bg-slate-100 text-slate-700 px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full font-medium whitespace-nowrap">Clásicos &amp; Familia</button>
+                        <button onclick="filterMovieCategory('tv-shows')" id="mcat-tv-shows" class="bg-slate-100 text-slate-700 px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full font-medium whitespace-nowrap">Series</button>
+                    </div>
+                    <div id="movieGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+                    <div class="mt-6 bg-gradient-to-br from-slate-900 to-sky-950 text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-amber-400"><i class="fa-solid fa-trophy mr-2"></i>Desafío "Bingo Cineasta"</h3>
+                            <span class="text-[11px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-full font-bold" id="bingoCounter">0 / 8</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Haz que la familia capture las fotos icónicas en cada parada. El progreso se guarda automáticamente.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1" id="bingoList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="xview-food" class="hidden space-y-4">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-slate-200">
+                    <h2 class="text-sm font-extrabold text-slate-900 mb-1"><i class="fa-solid fa-utensils text-rose-500 mr-1.5"></i>Lista Gastronómica Completa</h2>
+                    <p class="text-xs text-slate-500 mb-4">Menú de opciones para consultar en cualquier momento. En cada día te mostramos 3 según la zona.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5" id="foodFullList"></div>
+                </div>
+            </div>
+
+            <div id="xview-stores" class="hidden space-y-4">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-slate-200">
+                    <h2 class="text-sm font-extrabold text-slate-900 mb-1"><i class="fa-solid fa-store text-purple-600 mr-1.5"></i>Megatiendas Íconicas &amp; Malls</h2>
+                    <p class="text-xs text-slate-500 mb-4">Tiendas insignia según su lugar en la ruta del viaje.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">💻 B&amp;H Photo Video</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 2</span></div><p class="text-xs text-slate-600">420 9th Ave. Meca tech con sus famosos rieles mecánicos aéreos transportando paquetes sobre los pasillos.</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">⚡ Harry Potter New York</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 2</span></div><p class="text-xs text-slate-600">935 Broadway. 3 pisos, colección más grande del mundo, Butterbeer Bar y varitas interactivas.</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">👟 KITH SoHo &amp; KITH Treats</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 6</span></div><p class="text-xs text-slate-600">337 Lafayette St. Flagship de streetwear con el bar de helados virales con cereales.</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">🍏 Apple Fifth Avenue (Cubo)</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 8</span></div><p class="text-xs text-slate-600">767 5th Ave. Cubo de cristal icónico, abierto 24/7/365.</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">🏀 NBA Store Fifth Avenue</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 10</span></div><p class="text-xs text-slate-600">545 5th Ave. 3 pisos con cancha interactiva, camisetas personalizables y réplica del trofeo.</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">🎮 Nintendo NY &amp; FAO Schwarz</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 10</span></div><p class="text-xs text-slate-600">Rockefeller Plaza. Nintendo de 2 pisos (Mario/Zelda) y FAO con el piano de suelo de "Big".</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">☕ Starbucks Reserve Roastery</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Día 13</span></div><p class="text-xs text-slate-600">61 9th Ave. Palacio inmersivo de café de 3 pisos con tostadoras en vivo.</p></div>
+                        <div class="bg-purple-50/60 p-3.5 rounded-xl border border-purple-100"><div class="flex justify-between gap-1 mb-1"><span class="font-bold text-xs text-purple-900">🛍️ Green Acres Mall</span><span class="bg-purple-200 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Días 5 &amp; 14</span></div><p class="text-xs text-slate-600">A 5 min de casa base: Macy's, Target, Primark, Sephora, Zara y Pandora.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    /* ============ ESTADO + PERSISTENCIA (localStorage) ============ */
+    const TRIP_START = new Date(2026, 8, 13); // 13 sept 2026
+    const N_DAYS = 14;
+    const EMPTY_STATE = () => ({ done: {}, chk: {}, bingo: {}, prep: {}, day: 1 });
+    let state = EMPTY_STATE();
+    function plainObject(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
+    function loadState() {
+        let raw = {};
+        try { raw = JSON.parse(localStorage.getItem('nyg2026') || '{}') || {}; } catch (e) { raw = {}; }
+        if (!raw || typeof raw !== 'object') raw = {};
+        state = {
+            done: plainObject(raw.done),
+            chk: plainObject(raw.chk),
+            bingo: plainObject(raw.bingo),
+            prep: plainObject(raw.prep),
+            day: Number.isInteger(raw.day) && raw.day >= 1 && raw.day <= N_DAYS ? raw.day : 1
+        };
+    }
+    function persist() { try { localStorage.setItem('nyg2026', JSON.stringify(state)); } catch (e) {} }
+    function resetAll() {
+        if (!confirm('¿Borrar todo el progreso guardado (hechos, checks, bingo)?')) return;
+        try { localStorage.removeItem('nyg2026'); } catch (e) {}
+        state = EMPTY_STATE();
+        switchTab(activeTab);
+    }
+
+    /* ============ NIVELES & ESTADOS ============ */
+    const LVL = {
+        must:  { tag: '⭐ MUST',          cls: 'bg-amber-400 text-slate-900 font-black' },
+        imp:   { tag: '🟢 IMPORTANTE',    cls: 'bg-emerald-100 text-emerald-800' },
+        opt:   { tag: '🟡 SI HAY TIEMPO', cls: 'bg-sky-100 text-sky-800' },
+        extra: { tag: '⚪ EXTRA',         cls: 'bg-slate-100 text-slate-500' }
+    };
+
+    /* ============ DATOS: ITINERARIO ============ */
+    function ITIN() { return [
+        {
+            day: 1, date: "Domingo 13 de Septiembre",
+            title: "Llegada + Tanger Outlets + Noche en Times Square (🟡 jet lag)",
+            zone: "Long Island (Deer Park) & Midtown Manhattan",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Valley+Stream+Station,+NY&destination=Times+Square,+NY&waypoints=Tanger+Outlets+Deer+Park,+NY%7CGrand+Central+Terminal,+NY%7CBryant+Park,+NY",
+            buffer: "☕ Bloque de espontaneidad: café donde caigan y caminata sin horario. Con 6AM de llegada + jet lag, no fuerces nada después de las 20:00.",
+            rain: "Tanger y Times Square son mayormente cubiertos: si llueve de noche, refugiarse en Krispy Kreme / M&M's o volver temprano a Valley Stream.",
+            steps: [
+                { t: "06:00 - 08:30", a: "Llegada al Aeropuerto JFK/LGA. Inmigración y equipaje.", l: "imp" },
+                { t: "08:30 - 09:30", a: "Traslado en Uber/Taxi a la casa base en Valley Stream con el equipaje.", l: "imp" },
+                { t: "10:30 - 15:30", a: "🛍️ <strong>Tanger Outlets Deer Park:</strong> jornada de compras de llegada (Nike, Adidas, Coach, Tommy).", l: "must", q: "Tanger Outlets Deer Park" },
+                { t: "15:30 - 17:30", a: "Regreso a Valley Stream: guardar compras y descanso ligero pre-salida.", l: "imp" },
+                { t: "17:30 - 18:15", a: "🚆 LIRR a Manhattan: Valley Stream → Grand Central Madison (35 min).", l: "imp", q: "Grand Central Madison" },
+                { t: "18:15 - 19:30", a: "🚶 Caminata 42nd St: Chrysler, Bryant Park y Biblioteca Pública.", l: "opt", q: "Grand Central Terminal" },
+                { t: "19:30 - 21:30", a: "✨ <strong>Times Square Nocturno:</strong> escaleras TKTS, Krispy Kreme, M&M's World y Hershey's.", l: "opt", q: "Times Square" },
+                { t: "21:30 - 22:15", a: "🌃 Opcional — M Social Hotel Rooftop (solo mayores de 18). Si el jet lag pega fuerte, saltarlo.", l: "opt", q: "M Social Hotel Times Square" }
+            ],
+            cinema: [
+                { n: "Spider-Man 2 & No Way Home", d: "Times Square: pantallas gigantes y pelea de Electro." },
+                { n: "The Avengers (2012)", d: "Loki y la invasión Chitauri en las pantallas de Times Square." },
+                { n: "Birdman (2014)", d: "Keaton en calzoncillos caminando entre la multitud real." }
+            ],
+            iconicStores: "<strong>Krispy Kreme (1601 Broadway):</strong> cascada de glaseado en vivo · <strong>M&M's World &amp; Hershey's:</strong> 3 pisos de dulces",
+            checklist: ["Admirar Grand Central Madison al llegar en el LIRR.", "Foto nocturna en las escaleras rojas de Times Square.", "Ver el 'Doughnut Theater' en Krispy Kreme.", "Llenar una bolsa en M&M's World."],
+            court: "🏀 Chelsea Park Courts (28th & 10th Ave) — disponible si el grupo sale a caminar de noche.",
+            food: [
+                { g: "Recomendado", name: "Los Tacos No. 1 — Times Square", addr: "229 W 43rd St", q: "Los Tacos No 1 229 W 43rd St New York" },
+                { g: "Rápido", name: "Raising Cane's — Times Square", addr: "1501 Broadway", q: "Raising Cane's 1501 Broadway New York" },
+                { g: "Alternativa", name: "7th Street Burger — Times Square", addr: "485 7th Ave", q: "7th Street Burger 485 7th Ave New York" }
+            ],
+            budgetPax: "$60", budgetGroup: "$180"
+        },
+        {
+            day: 2, date: "Lunes 14 de Septiembre",
+            title: "Midtown West + Flatiron + HIGH LINE & CHELSEA (protagonista)",
+            zone: "Midtown West, Flatiron, Chelsea & Long Island City",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Penn+Station,+NY&destination=Gantry+Plaza+State+Park,+NY&waypoints=B%26H+Photo+Video,+9th+Ave,+NY%7CMacy's+Herald+Square,+NY%7CEmpire+State+Building,+NY%7CHarry+Potter+New+York,+Broadway,+NY%7CChelsea+Market,+NY%7CLittle+Island,+NY",
+            buffer: "☕ Bloque de espontaneidad: Chelsea Market tiene comida y mesas — paren a comer sin apuro entre el High Line y Little Island.",
+            rain: "El High Line queda descartable bajo lluvia → Plan B: Chelsea Market + Pier 57 Market (interiores) y las tiendas de 9th Ave.",
+            steps: [
+                { t: "08:30 - 09:30", a: "🚆 LIRR Valley Stream → Penn Station.", l: "imp" },
+                { t: "09:30 - 11:00", a: "📷 B&H Photo Video (420 9th Ave): rieles mecánicos aéreos.", l: "opt", q: "B&H Photo Video New York" },
+                { t: "11:00 - 12:30", a: "🚶 Calle 34: Macy's Herald Square y fotos al Empire State.", l: "imp", q: "Empire State Building" },
+                { t: "12:30 - 13:30", a: "⚡ Broadway abajo: Flatiron Building (Daily Bugle) + Harry Potter NY.", l: "opt", q: "Flatiron Building" },
+                { t: "13:30 - 15:00", a: "🌿 <strong>PROTAGONISTA DEL DÍA: High Line + Chelsea Market.</strong> Parque elevado completo hasta el mercado.", l: "must", q: "High Line Park" },
+                { t: "15:00 - 17:00", a: "🏝️ Little Island (Pier 55) y mirador de Pier 57 Rooftop ($0).", l: "opt", q: "Little Island New York" },
+                { t: "17:30 - 19:30", a: "🌅 Metro 7 a LIC: atardecer dorado en Gantry Plaza State Park.", l: "opt", q: "Gantry Plaza State Park" }
+            ],
+            cinema: [
+                { n: "Spider-Man (2002)", d: "El Flatiron es la sede del Daily Bugle de J. Jonah Jameson." },
+                { n: "Elf (2003)", d: "Buddy oprime todos los botones del ascensor del Empire State." },
+                { n: "Sleepless in Seattle & King Kong", d: "El observatorio del Empire State como escenario romántico y cumbre de Kong." }
+            ],
+            iconicStores: "<strong>B&amp;H Photo Video</strong> · <strong>Macy's Herald Square</strong> · <strong>Harry Potter NY (935 Broadway): Butterbeer Bar</strong>",
+            checklist: ["Ver los carritos aéreos de B&H Photo.", "Foto vertical del Flatiron.", "Butterbeer en Harry Potter NY.", "Caminar el High Line completo.", "Terraza gratis de Pier 57.", "Atardecer en Gantry Plaza."],
+            court: "🏀 Chelsea Park Courts (28th & 10th Ave), junto al High Line.",
+            food: [
+                { g: "Recomendado", name: "Los Tacos No. 1 — Hudson Yards", addr: "508 W 34th St", q: "Los Tacos No 1 508 W 34th St New York" },
+                { g: "Rápido", name: "Chick-fil-A — 219 W 34th St", addr: "219 W 34th St", q: "Chick fil A 219 W 34th St New York" },
+                { g: "Alternativa", name: "Raising Cane's — Penn Station", addr: "1 Penn Plaza", q: "Raising Cane's 1 Penn Plaza New York" }
+            ],
+            budgetPax: "$60", budgetGroup: "$180"
+        },
+        {
+            day: 3, date: "Martes 15 de Septiembre", badge: "Niágara · Día 1",
+            title: "Viaje a Niágara + Outlets + PRIMER IMPACTO con las Cataratas (protagonista)",
+            zone: "Cataratas del Niágara, NY",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Buffalo+Niagara+International+Airport&destination=Niagara+Falls+State+Park,+NY&waypoints=Fashion+Outlets+of+Niagara+Falls+USA",
+            note: "🧭 Vuelo vs tren/bus a Niágara: comparativa completa de tiempos y costos en <a href='#' onclick=\"switchTab('extras');switchExtra('prep');return false;\" class='underline font-bold'>EXTRAS → Preparativos</a> para decidir informado.",
+            buffer: "☕ Bloque de espontaneidad: café con vista al río después del check-in, sin cronómetro.",
+            rain: "Las cataratas se disfrutan IGUAL bajo lluvia (comprá ponchos). Fashion Outlets es cubierto. No lo canceles: es un parque, no un mirador bajo techo.",
+            steps: [
+                { t: "06:00 - 09:30", a: "Traslado al aeropuerto + vuelo JFK/LGA → Buffalo (BUF).", l: "imp" },
+                { t: "09:30 - 12:00", a: "Traslado a Niagara Falls con parada en <strong>Fashion Outlets</strong>.", l: "opt", q: "Fashion Outlets of Niagara Falls USA" },
+                { t: "12:00 - 13:30", a: "Almuerzo + check-in en el hotel cerca del parque.", l: "imp" },
+                { t: "14:00 - 17:30", a: "🌊 <strong>PROTAGONISTA: Niagara Falls State Park</strong> — Prospect Point y el borde de las American Falls.", l: "must", q: "Niagara Falls State Park" },
+                { t: "18:00 - 20:30", a: "Cena + paseo nocturno por la iluminación multicolor de las cataratas.", l: "imp" }
+            ],
+            cinema: [
+                { n: "Bruce Almighty (2003)", d: "Jim Carrey transmite en vivo desde Prospect Point con poncho amarillo." },
+                { n: "Superman II (1980)", d: "Clark y Lois en las cataratas; Superman rescata a un niño en la barandilla." }
+            ],
+            iconicStores: "<strong>Fashion Outlets of Niagara Falls USA:</strong> 120+ tiendas (Nike, Coach, Kate Spade) · <strong>Visitor Center Gift Shop</strong>",
+            checklist: ["Compras de outlet libre de impuestos de ropa deportiva.", "Primera vista desde Prospect Point.", "Foto en la barandilla (Bruce Almighty).", "Iluminación nocturna de las cataratas."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "Top of the Falls Restaurant", addr: "30 Goat Island Loop Rd (dentro del parque)", q: "Top of the Falls Restaurant Niagara Falls" },
+                { g: "Rápido", name: "Hard Rock Cafe Niagara Falls USA", addr: "333 Prospect St", q: "Hard Rock Cafe Niagara Falls USA" },
+                { g: "Alternativa", name: "Savor · Niagara Falls Culinary Institute", addr: "28 Old Falls St", q: "Savor Restaurant Niagara Falls Culinary Institute" }
+            ],
+            budgetPax: "$200", budgetGroup: "$600"
+        },
+        {
+            day: 4, date: "Miércoles 16 de Septiembre", badge: "🎂 Cumpleaños de Mamá",
+            title: "PROTAGONISTA: Maid of the Mist + Cave of the Winds + Cena de Gala 🎂",
+            zone: "Cataratas del Niágara, NY",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Maid+of+the+Mist+Boat+Tour,+NY&destination=Cave+of+the+Winds,+NY&waypoints=Goat+Island,+Niagara+Falls,+NY%7CThree+Sisters+Islands,+NY",
+            buffer: "☕ Bloque de espontaneidad: Maple Shop y helados en Goat Island sin apuro entre atracciones.",
+            rain: "Maid of the Mist y Cave of the Winds OPERAN bajo lluvia (dan poncho). No lo aplaces: es el mejor clima posible para este día.",
+            steps: [
+                { t: "08:30 - 10:00", a: "Desayuno festivo de cumpleaños en el hotel.", l: "imp" },
+                { t: "10:00 - 12:30", a: "🚢 <strong>PROTAGONISTA: Maid of the Mist</strong> — ponchos azules hasta Horseshoe Falls (¡Jim & Pam, The Office!).", l: "must", q: "Maid of the Mist" },
+                { t: "12:30 - 14:00", a: "Almuerzo especial en la zona del parque.", l: "imp" },
+                { t: "14:00 - 17:00", a: "🐐 Goat Island: The Maple Shop + <strong>Cave of the Winds</strong> (Hurricane Deck, 50 m abajo).", l: "must", q: "Cave of the Winds Niagara" },
+                { t: "17:00 - 19:00", a: "Paseo por Three Sisters Islands y descanso en el hotel.", l: "opt", q: "Three Sisters Islands" },
+                { t: "19:30 - 22:00", a: "🎉 <strong>CENA DE CUMPLEAÑOS DE MAMÁ:</strong> cena con vista a las cataratas, brindis y fuegos artificiales.", l: "must" }
+            ],
+            cinema: [
+                { n: "The Office (Boda de Jim & Pam)", d: "Se casaron a bordo del Maid of the Mist con ponchos azules." },
+                { n: "Niagara (1953)", d: "Marilyn Monroe grabada en las plataformas de Goat Island." }
+            ],
+            iconicStores: "<strong>The Maple Shop (Goat Island):</strong> jarabe de arce orgánico · <strong>Maid of the Mist Plaza Shops</strong>",
+            checklist: ["Poncho azul en Maid of the Mist (The Office).", "Dulce de arce en Goat Island.", "Hurricane Deck bajo la fuerza del agua.", "Brindis y pastel para Mamá.", "Fuegos artificiales sobre Horseshoe Falls."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "Top of the Falls Restaurant (vista a Horseshoe)", addr: "30 Goat Island Loop Rd", q: "Top of the Falls Restaurant Niagara Falls" },
+                { g: "Rápido", name: "Hard Rock Cafe Niagara Falls USA", addr: "333 Prospect St", q: "Hard Rock Cafe Niagara Falls USA" },
+                { g: "Alternativa", name: "Savor · Niagara Falls Culinary Institute", addr: "28 Old Falls St", q: "Savor Restaurant Niagara Falls Culinary Institute" }
+            ],
+            budgetPax: "$150", budgetGroup: "$450"
+        },
+        {
+            day: 5, date: "Jueves 17 de Septiembre", badge: "Regreso a NY",
+            title: "Mañana en Niágara + Vuelo de Retorno + Green Acres Mall",
+            zone: "Niágara ➔ Long Island (Valley Stream)",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Three+Sisters+Islands,+NY&destination=Green+Acres+Mall,+Sunrise+Hwy,+Valley+Stream,+NY&waypoints=Buffalo+Niagara+International+Airport",
+            buffer: "☕ Bloque de espontaneidad: café en casa base después del vuelo, antes del mall — nada apurada tras 2 días intensos.",
+            rain: "El día sobrevive igual: Green Acres es 100% interior.",
+            steps: [
+                { t: "08:30 - 10:30", a: "Check-out y paseo de despedida por las orillas de Niágara.", l: "imp" },
+                { t: "11:00 - 14:30", a: "Traslado a Buffalo y vuelo de retorno a NYC.", l: "imp" },
+                { t: "15:00 - 16:00", a: "Uber/Taxi a la casa base en Valley Stream.", l: "imp" },
+                { t: "16:30 - 19:30", a: "🛍️ <strong>Green Acres Mall:</strong> Target, Primark (ropa económica), Sephora, Zara.", l: "opt", q: "Green Acres Mall Valley Stream" },
+                { t: "19:30 - 21:00", a: "Cena tranquila en el food court del mall.", l: "imp" }
+            ],
+            cinema: [
+                { n: "Goodfellas (1990)", d: "Las inmediaciones del JFK en Long Island son territorio Scorsese." }
+            ],
+            iconicStores: "<strong>Green Acres Mall:</strong> departamentales + Primark/Target económicos",
+            checklist: ["Paseo de despedida por las cataratas.", "Surtido en Primark, Target y Sephora.", "Cena tranquila antes de descansar."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "Hard Rock Cafe Niagara Falls USA (almuerzo pre-vuelo)", addr: "333 Prospect St", q: "Hard Rock Cafe Niagara Falls USA" },
+                { g: "Rápido", name: "Food court del aeropuerto Buffalo (BUF)", addr: "Buffalo Niagara International Airport", q: "Buffalo Niagara International Airport" },
+                { g: "Alternativa", name: "Green Acres Mall Food Court (cena)", addr: "Sunrise Hwy, Valley Stream", q: "Green Acres Mall Valley Stream" }
+            ],
+            budgetPax: "$70", budgetGroup: "$210"
+        },
+        {
+            day: 6, date: "Viernes 18 de Septiembre",
+            title: "Joe's Pizza 🍕 + Friends 📺 + Ghostbusters + SoHo + Little Italy & Chinatown",
+            zone: "Greenwich Village, Tribeca, SoHo, Little Italy & Chinatown",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Penn+Station,+NY&destination=Columbus+Park,+Chinatown,+NY&waypoints=Washington+Square+Park,+NY%7CJoe's+Pizza,+Carmine+St,+NY%7C90+Bedford+St,+NY%7CHook+%26+Ladder+8,+N+Moore+St,+NY%7CKITH+Soho,+Lafayette+St,+NY%7CLittle+Italy,+Mulberry+St,+NY",
+            buffer: "☕ Bloque de espontaneidad: banco en Washington Square o gelato en Little Italy. El día camina MUCHO: los pies mandan.",
+            rain: "Joe's Pizza, Ferrara y las tiendas caben bajo techo; solo el paseo de barrios queda mojado. Reordena empezando por Joe's.",
+            steps: [
+                { t: "09:00 - 09:45", a: "🚆 LIRR + Metro A/C/E a West 4th St.", l: "imp" },
+                { t: "09:45 - 10:45", a: "🌳 Washington Square Park: el Arco (Avengers: Infinity War / Soy Leyenda).", l: "imp", q: "Washington Square Park" },
+                { t: "10:45 - 11:30", a: "🍕 <strong>PROTAGONISTA: Joe's Pizza (7 Carmine St)</strong> — 'Pizza Time!' de Spider-Man 2 + vista a The Cage.", l: "must", q: "Joe's Pizza Carmine St New York" },
+                { t: "11:30 - 12:15", a: "📺 <strong>PROTAGONISTA: Edificio de Friends</strong> (90 Bedford St & Grove St).", l: "must", q: "Friends Apartment 90 Bedford St New York" },
+                { t: "12:45 - 13:45", a: "👻 Tribeca: Hook & Ladder 8, la estación de Cazafantasmas.", l: "imp", q: "Ghostbusters Firehouse New York" },
+                { t: "13:45 - 15:30", a: "🛍️ SoHo Cast-Iron (Spring/Prince/Lafayette): KITH + helados KITH Treats + Glossier.", l: "opt", q: "KITH SoHo Lafayette St" },
+                { t: "15:30 - 17:00", a: "🇮🇹 Little Italy (Mulberry St): Ferrara Bakery (1892) y murales.", l: "imp", q: "Little Italy Mulberry Street" },
+                { t: "17:00 - 19:00", a: "🐉 Chinatown: Mott St, Doyers St y Columbus Park.", l: "imp", q: "Chinatown Columbus Park" }
+            ],
+            cinema: [
+                { n: "Spider-Man 2 (2004)", d: "Tobey Maguire reparte pizzas de Joe's corriendo por los techos." },
+                { n: "Friends (1994-2004)", d: "La fachada roja de 90 Bedford St de cada intermedio." },
+                { n: "Ghostbusters (1984)", d: "Hook & Ladder 8 con el logo pintado en la vereda." },
+                { n: "Avengers: Infinity War (2018)", d: "La Q-Ship de Thanos sobre Washington Square Park." },
+                { n: "El Padrino", d: "Las reuniones Corleone caminando por Little Italy." }
+            ],
+            iconicStores: "<strong>Joe's Pizza</strong> · <strong>KITH SoHo (337 Lafayette): bar de helados virales</strong> · <strong>Glossier SoHo</strong> · <strong>Ferrara Bakery (195 Grand St)</strong>",
+            checklist: ["Foto bajo el Arco de Washington Sq.", "Rebanada de pepperoni en Joe's Pizza.", "Foto al edificio de Friends.", "Logo de Cazafantasmas en el piso.", "Helado con cereales en KITH Treats.", "Cannoli en Mulberry St.", "Callejón curvo de Doyers St."],
+            court: "🏀 The Cage (W 4th St & 6th Ave): la cancha enjaulada más famosa del mundo, a 2 min de Joe's.",
+            food: [
+                { g: "Recomendado", name: "Joe's Pizza", addr: "7 Carmine St", q: "Joe's Pizza 7 Carmine St New York" },
+                { g: "Rápido", name: "Jin Mei Dumpling (Chinatown)", addr: "25B Henry St", q: "Jin Mei Dumpling 25B Henry St New York" },
+                { g: "Alternativa", name: "7th Street Burger — SoHo", addr: "250 Mulberry St", q: "7th Street Burger 250 Mulberry St New York" }
+            ],
+            budgetPax: "$60", budgetGroup: "$180"
+        },
+        {
+            day: 7, date: "Sábado 19 de Septiembre", badge: "Free Tour (14:30 · reservado)",
+            title: "Seaport + Oculus + FREE TOUR de Bajo Manhattan (protagonista) & 9/11",
+            zone: "Financial District, Seaport & World Trade Center",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=South+Street+Seaport,+NY&destination=9%2F11+Memorial+%26+Museum,+NY&waypoints=Bowling+Green,+NY%7CNew+York+Stock+Exchange,+NY%7CTrinity+Church,+Wall+St,+NY%7CThe+Oculus,+NY%7CEataly+NYC+Downtown,+NY",
+            buffer: "☕ Bloque de espontaneidad: banca en Brookfield Place junto al Hudson con un café de Eataly antes del tour.",
+            rain: "El free tour camina igual con paraguas; plan interior: Oculus + Eataly + Piscinas del 9/11 + Brookfield Place.",
+            steps: [
+                { t: "09:00 - 10:00", a: "🚆 LIRR + Metro 2/3 o A/C a Fulton St.", l: "imp" },
+                { t: "10:00 - 12:00", a: "⚓ South Street Seaport (Pier 17): vistas a los puentes desde el East River.", l: "opt", q: "South Street Seaport" },
+                { t: "12:00 - 13:30", a: "🕊️ <strong>The Oculus</strong> + almuerzo en Eataly NYC (3 WTC).", l: "imp", q: "Oculus New York" },
+                { t: "14:15 - 14:30", a: "Caminata a Bowling Green (frente al Charging Bull): punto de encuentro.", l: "imp", q: "Bowling Green New York" },
+                { t: "14:30 - 17:00", a: "🏷️ <strong>PROTAGONISTA: FREE TOUR GUIADO (2.5h):</strong> Bowling Green → Wall St (Bolsa) → Trinity Church → Federal Hall → 9/11 Memorial.", l: "must", q: "Bowling Green New York" },
+                { t: "17:00 - 19:00", a: "Piscinas reflectantes del 9/11 Memorial al atardecer + One WTC.", l: "imp", q: "9/11 Memorial New York" }
+            ],
+            cinema: [
+                { n: "Dark Knight Rises (2012)", d: "Bane asalta la Bolsa de Valores de NY." },
+                { n: "National Treasure (2004)", d: "Nicolas Cage descubre el tesoro bajo Trinity Church." },
+                { n: "El Lobo de Wall Street (2013)", d: "DiCaprio frente a la Bolsa." }
+            ],
+            iconicStores: "<strong>Westfield WTC (The Oculus)</strong> · <strong>Eataly NYC Downtown</strong>",
+            checklist: ["Vista de puentes desde Pier 17.", "Estructura blanca de The Oculus.", "Foto en la fachada de la Bolsa (Batman).", "Trinity Church (National Treasure).", "Homenaje en las piscinas del Memorial."],
+            court: "🏀 Battery Park City Court, bordeando el Hudson.",
+            food: [
+                { g: "Recomendado", name: "Eataly NYC Downtown (3 WTC)", addr: "3 World Trade Center", q: "Eataly NYC Downtown" },
+                { g: "Rápido", name: "Westfield WTC (options de food court)", addr: "185 Broadway", q: "Westfield World Trade Center" },
+                { g: "Alternativa", name: "7th Street Burger", addr: "Varias sucursales", q: "7th Street Burger New York" }
+            ],
+            budgetPax: "$65", budgetGroup: "$195"
+        },
+        {
+            day: 8, date: "Domingo 20 de Septiembre", badge: "Ferry Reservado",
+            title: "PROTAGONISTA: ESTATUA DE LA LIBERTAD 🗽 — Central Park 🟡 + Apple 5th",
+            zone: "New York Harbor & Central Park Sur / 5th Ave",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Castle+Clinton+National+Monument,+NY&destination=Apple+Fifth+Avenue,+Fifth+Avenue,+NY&waypoints=Statue+of+Liberty,+NY%7CThe+Plaza,+Fifth+Avenue,+NY%7CBethesda+Terrace,+Central+Park,+NY",
+            buffer: "☕ Bloque de espontaneidad: banca en la sombra de Central Park Sur con un café del mall de Columbus Circle — respirar antes de tiendas.",
+            rain: "El ferry opera bajo lluvia (hay interiores en Liberty Island). Si el parque moja: Plan B = The Shops at Columbus Circle + Apple 5th.",
+            steps: [
+                { t: "08:00 - 09:00", a: "🚆 LIRR + Metro 1 a South Ferry / Bowling Green.", l: "imp" },
+                { t: "09:30 - 13:30", a: "🗽 <strong>PROTAGONISTA: FERRY A LA ESTATUA DE LA LIBERTAD</strong> — Statue City Cruises (pagado ~$26): Liberty Island + Ellis Island.", l: "must", q: "Statue City Cruises Battery Park" },
+                { t: "13:30 - 14:30", a: "Almuerzo cerca de Battery Park al regresar.", l: "imp", q: "Battery Park" },
+                { t: "15:00 - 17:30", a: "🌲 🟡 <strong>Central Park Sur — solo si hay tiempo/energía:</strong> Wollman Rink, The Plaza y Bethesda Terrace.", l: "opt", q: "Bethesda Terrace" },
+                { t: "17:30 - 19:00", a: "🍏 Apple Fifth Avenue (cubo de cristal 24/7) + paseo frente a Tiffany.", l: "imp", q: "Apple Fifth Avenue" },
+                { t: "19:00 - 20:30", a: "Cena en Midtown + LIRR a Valley Stream.", l: "imp" }
+            ],
+            cinema: [
+                { n: "Home Alone 2 (1992)", d: "Kevin en The Plaza, Wollman Rink y la Fuente de Bethesda." },
+                { n: "The Avengers (2012)", d: "Thor y Loki usan el Tesseract en Bethesda Terrace." },
+                { n: "X-Men (2000)", d: "La batalla final dentro de la antorcha de la Estatua." },
+                { n: "Encantada (2007)", d: "'That's How You Know' alrededor de Bethesda." }
+            ],
+            iconicStores: "<strong>Apple Fifth Avenue (767 5th Ave): cubo 24h</strong> · <strong>The Shops at Columbus Circle</strong>",
+            checklist: ["Foto con la Estatua (X-Men).", "Museo de Inmigración en Ellis Island.", "Fuente de Bethesda (Home Alone 2 / Avengers).", "Fachada del Hotel Plaza.", "Escalera de cristal de Apple 5th."],
+            court: "🏀 Great Lawn Courts (Central Park) — solo si el parque queda en el plan.",
+            food: [
+                { g: "Recomendado", name: "Grand Central Food Hall", addr: "87 E 42nd St", q: "Grand Central Market" },
+                { g: "Rápido", name: "Chick-fil-A — 1536 3rd Ave", addr: "Upper East Side", q: "Chick fil A 1536 3rd Ave New York" },
+                { g: "Alternativa", name: "The Shops at Columbus Circle", addr: "10 Columbus Circle", q: "Shops at Columbus Circle" }
+            ],
+            budgetPax: "$86", budgetGroup: "$258"
+        },
+        {
+            day: 9, date: "Lunes 21 de Septiembre", badge: "Brooklyn Completo",
+            title: "PROTAGONISTAS: Puente de Brooklyn 🌉 + DUMBO 📸 — Time Out Market & Promenade",
+            zone: "Brooklyn Waterfront & DUMBO",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=High+St+Station,+Brooklyn,+NY&destination=Brooklyn+Bridge+Park,+NY&waypoints=Brooklyn+Heights+Promenade,+NY%7CPier+2+Basketball+Courts,+Brooklyn,+NY%7CBrooklyn+Bridge,+NY%7CWashington+St+%26+Water+St,+Brooklyn,+NY%7CEmpire+Stores,+Brooklyn,+NY",
+            buffer: "☕ Bloque de espontaneidad: galletas de Jacques Torres + banca en Pier 1 mirando el río al atardecer.",
+            rain: "Plan B perfecto bajo lluvia: Time Out Market + Jacques Torres (ambos interiores) y el puente solo si aclara.",
+            steps: [
+                { t: "09:00 - 10:00", a: "🚆 LIRR + Metro A/C a High St (Brooklyn).", l: "imp" },
+                { t: "10:00 - 11:30", a: "🌇 Brooklyn Heights Promenade: vista panorámica a Lower Manhattan.", l: "imp", q: "Brooklyn Heights Promenade" },
+                { t: "11:30 - 12:30", a: "🏀 Pier 2 Courts: canchas de básquet sobre el agua.", l: "opt", q: "Brooklyn Bridge Park Pier 2" },
+                { t: "12:30 - 14:00", a: "🌉 <strong>PROTAGONISTA: CRUCE DEL PUENTE DE BROOKLYN</strong> por la pasarela de madera.", l: "must", q: "Brooklyn Bridge" },
+                { t: "14:00 - 15:30", a: "🍔 Almuerzo en Time Out Market (Empire Stores, DUMBO).", l: "imp", q: "Time Out Market New York" },
+                { t: "15:30 - 17:00", a: "📸 <strong>PROTAGONISTA: Washington St DUMBO</strong> — foto del Manhattan Bridge + Loft de Dan Humphrey (Gossip Girl).", l: "must", q: "Washington Street DUMBO" },
+                { t: "17:00 - 19:00", a: "⛵ Jane's Carousel + atardecer en Brooklyn Bridge Park.", l: "opt", q: "Jane's Carousel" }
+            ],
+            cinema: [
+                { n: "Gossip Girl (2007-2012)", d: "El loft de Dan Humphrey en 45 Washington St." },
+                { n: "Soy Leyenda (2007)", d: "La escena de evacuación cruzando el Puente de Brooklyn." },
+                { n: "Érase una vez en América (1984)", d: "El encuadre inmortal del puente entre edificios de ladrillo." }
+            ],
+            iconicStores: "<strong>Empire Stores</strong> · <strong>Jacques Torres Chocolate (66 Water St): galletas calientes</strong>",
+            checklist: ["Skyline desde la Promenade.", "Canchas de Pier 2 sobre el agua.", "Paseo elevado del Puente de Brooklyn.", "Foto en Washington St.", "Fachada del loft de Gossip Girl.", "Galletas de Jacques Torres.", "Terraza 360 de Empire Stores."],
+            court: "🏀 Pier 2 Courts (Brooklyn Bridge Park): canchas frente al skyline.",
+            food: [
+                { g: "Recomendado", name: "Time Out Market Brooklyn", addr: "55 Water St", q: "Time Out Market New York" },
+                { g: "Rápido", name: "Jacques Torres Chocolate", addr: "66 Water St", q: "Jacques Torres 66 Water St Brooklyn" },
+                { g: "Alternativa", name: "Gran Electrica (DUMBO)", addr: "4 Main St", q: "Gran Electrica Brooklyn" }
+            ],
+            budgetPax: "$60", budgetGroup: "$180"
+        },
+        {
+            day: 10, date: "Martes 22 de Septiembre", badge: "Corazón de Manhattan",
+            title: "PROTAGONISTAS: SUMMIT 🔮 + Grand Central 🏛️ — Greenacre (ancla) · tiendas 🟡",
+            zone: "Midtown East & Rockefeller Center",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Grand+Central+Terminal,+NY&destination=FAO+Schwarz,+Rockefeller+Plaza,+NY&waypoints=SUMMIT+One+Vanderbilt,+NY%7CNBA+Store,+Fifth+Avenue,+NY%7CSt.+Patrick's+Cathedral,+Fifth+Avenue,+NY%7CNintendo+New+York,+NY",
+            buffer: "🌿 Greenacre Park (217 E 51st) ES el ancla-buffers del día: cascada + bancos + café para respirar entre SUMMIT y las tiendas.",
+            rain: "Día perfecto bajo lluvia: SUMMIT y las megatiendas son todas interiores.",
+            steps: [
+                { t: "09:00 - 10:00", a: "🚆 LIRR Valley Stream → Grand Central Madison.", l: "imp" },
+                { t: "10:00 - 12:30", a: "🔮 <strong>PROTAGONISTA: SUMMIT One Vanderbilt</strong> (pagado ~$46): sala de espejos, globos y cubos suspendidos.", l: "must", q: "SUMMIT One Vanderbilt" },
+                { t: "12:30 - 13:30", a: "🏛️ <strong>PROTAGONISTA: Nave de Grand Central</strong> (techo astronómico, Avengers) + almuerzo en el Food Hall.", l: "must", q: "Grand Central Terminal" },
+                { t: "14:00 - 14:40", a: "🌿 <strong>ANCLA-PAUSA: Greenacre Park</strong> (217 E 51st St): cascada y bancos, 30-40 min. Entre 2nd y 3rd Ave.", l: "must", q: "Greenacre Park New York" },
+                { t: "14:40 - 15:10", a: "📚 🟡 SNFL Rooftop (455 5th Ave, 7º piso): terraza pública gratuita, primero en llegar.", l: "opt", q: "Stavros Niarchos Foundation Library" },
+                { t: "15:10 - 15:50", a: "🏀 🟡 NBA Store (545 5th Ave): mini cancha interactiva, camisetas y trofeo Larry O'Brien.", l: "opt", q: "NBA Store Fifth Avenue New York" },
+                { t: "15:50 - 17:30", a: "🎮 🟡 Rockefeller Center: St. Patrick's + Nintendo NY (Bowser) + LEGO + FAO Schwarz (piano de Big).", l: "opt", q: "Rockefeller Center" },
+                { t: "17:30 - 19:00", a: "Plaza de Rockefeller + Bryant Park, regreso al LIRR.", l: "imp" }
+            ],
+            cinema: [
+                { n: "Big (1988)", d: "Tom Hanks baila 'Heart and Soul' en el piano gigante de FAO Schwarz." },
+                { n: "The Avengers (2012)", d: "El reloj icónico de Grand Central resiste el ataque alienígena." },
+                { n: "Home Alone 2 (1992)", d: "Duncan's Toy Chest se inspiró en FAO Schwarz." }
+            ],
+            iconicStores: "<strong>FAO Schwarz (30 Rock Plaza)</strong> · <strong>NBA Store (545 5th Ave)</strong> · <strong>Nintendo NY</strong>",
+            checklist: ["Fotos inmersivas en los espejos de SUMMIT.", "Reloj de 4 caras y techo de Grand Central.", "Tiros en la mini cancha de NBA Store.", "Piano de FAO Schwarz.", "Estatua de Bowser en Nintendo NY."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "7th Street Burger — Bryant Park", addr: "11 W 42nd St", q: "7th Street Burger 11 W 42nd St New York" },
+                { g: "Rápido", name: "Chick-fil-A — 50 E 42nd St", addr: "42nd & Madison", q: "Chick fil A 50 E 42nd St New York" },
+                { g: "Alternativa", name: "Grand Central Food Hall", addr: "Grand Central Terminal", q: "Grand Central Food Hall" }
+            ],
+            budgetPax: "$106", budgetGroup: "$318"
+        },
+        {
+            day: 11, date: "Miércoles 23 de Septiembre", badge: "Cultura & Harlem",
+            title: "PROTAGONISTA: AMNH 🦖 (Una Noche en el Museo) — MET 🟡 + Harlem / Rucker Park",
+            zone: "Upper West / Upper East Side & Harlem",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=American+Museum+of+Natural+History,+NY&destination=Rucker+Park,+Frederick+Douglass+Blvd,+NY&waypoints=The+Metropolitan+Museum+of+Art,+NY%7CMalcolm+Shabazz+Harlem+Market,+NY%7CApollo+Theater,+NY",
+            buffer: "☕ Bloque de espontaneidad: Lexington Candy Shop (diner de 1927) como ancla de almuerzo — instantánea perfecta entre el museo y Harlem.",
+            rain: "AMNH es 100% interior: día automático si moja. Harlem queda a 10 min por Metro de 125th St.",
+            steps: [
+                { t: "09:00 - 10:00", a: "🚆 LIRR + Metro B/C a 81st St.", l: "imp" },
+                { t: "10:30 - 14:30", a: "🦖 <strong>PROTAGONISTA: AMNH</strong> (pagado ~$30) — Rexy el T-Rex de Una Noche en el Museo.", l: "must", q: "American Museum of Natural History" },
+                { t: "14:30 - 15:30", a: "🍽️ Lexington Candy Shop (1226 Lex & E 83rd St): diner clásico del Upper East Side.", l: "imp", q: "Lexington Candy Shop New York" },
+                { t: "15:30 - 16:00", a: "👑 🟡 MET: solo escalinatas para la foto de Gossip Girl (pase por el borde del parque).", l: "opt", q: "Metropolitan Museum of Art" },
+                { t: "16:00 - 18:30", a: "🎺 Harlem: Malcolm Shabazz Market + marquesina del Apollo Theater en la 125th St.", l: "imp", q: "Apollo Theater New York" },
+                { t: "18:30 - 19:30", a: "🏀 <strong>PROTAGONISTA #2: Rucker Park</strong> (155th & Frederick Douglass) — meca mundial del streetball (Uncle Drew).", l: "must", q: "Rucker Park New York" }
+            ],
+            cinema: [
+                { n: "Una Noche en el Museo (2006)", d: "Rexy el T-Rex cobra vida en el vestíbulo del AMNH." },
+                { n: "Gossip Girl (2007)", d: "Blair y Serena comiendo yogurt en las escaleras del MET." },
+                { n: "Uncle Drew (2018)", d: "Kyrie y leyendas NBA jugando en el Rucker." }
+            ],
+            iconicStores: "<strong>AMNH Museum Shop</strong> · <strong>Malcolm Shabazz Market:</strong> artesanías y telas de África",
+            checklist: ["Foto con Rexy el T-Rex.", "Sentarse en las escaleras del MET (Gossip Girl).", "Puestos de Shabazz Market.", "Marquesina luminosa del Apollo.", "Cancha sagrada del Rucker."],
+            court: "🏀 Rucker Park (155th St): la meca mundial del streetball.",
+            food: [
+                { g: "Recomendado", name: "Lexington Candy Shop", addr: "1226 Lexington Ave", q: "Lexington Candy Shop 1226 Lexington Ave New York" },
+                { g: "Rápido", name: "Raising Cane's — W 125th", addr: "124 W 125th St", q: "Raising Cane's 124 W 125th St New York" },
+                { g: "Alternativa", name: "Chick-fil-A — 216 W 125th St", addr: "Harlem", q: "Chick fil A 216 W 125th St New York" }
+            ],
+            budgetPax: "$90", budgetGroup: "$270"
+        },
+        {
+            day: 12, date: "Jueves 24 de Septiembre", badge: "Compras Grandes",
+            title: "⭐ DECISIÓN A/B: Macy's Herald Square (A — protagonista) o Woodbury (B)",
+            zone: "Herald Square (Midtown) u opción de outlet",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Penn+Station,+NY&destination=Macy%27s+Herald+Square,+New+York,+NY&waypoints=Manhattan+Mall,+New+York,+NY",
+            note: "🎯 <strong>A (protagonista): Macy's Herald Square</strong> — cero traslado largo, día liviano y conecta con el Día 13. B (alternativa): <strong>Woodbury Common</strong> solo si las ganas de compras aprietan (bus 1h por tramo desde Port Authority).",
+            buffer: "☕ Bloque de espontaneidad: banca en Herald Square o croissant en Bryant Park antes de volver — es el día previo a la cena de despedida.",
+            rain: "Ambas opciones son interiores: este día NO se pierde por lluvia.",
+            steps: [
+                { t: "08:30 - 10:00", a: "🚆 LIRR a Penn Station.", l: "imp" },
+                { t: "10:00 - 16:30", a: "🛍️ <strong>OPCIÓN A — PROTAGONISTA: Macy's Herald Square</strong> (+ Uniqlo + Manhattan Mall). Día de compras liviano en la ciudad (Milagro en la Calle 34).", l: "must", q: "Macy's Herald Square" },
+                { t: "10:30 - 16:30", a: "🚐 ⚪ <strong>OPCIÓN B (alternativa): Woodbury Common</strong> — bus Coach desde Port Authority (~1h por tramo), 250+ outlets de marca. Solo si el grupo exige lujo de outlet.", l: "extra", q: "Woodbury Common Premium Outlets" },
+                { t: "17:00 - 19:30", a: "Regreso a Valley Stream: empaque inicial de maletas + cena relajada.", l: "imp" }
+            ],
+            cinema: [
+                { n: "Milagro en la Calle 34", d: "Macy's Herald Square es el epicentro de la historia navideña clásica de NYC." }
+            ],
+            iconicStores: "<strong>Macy's Herald Square:</strong> la tienda departamental más grande del mundo · <strong>Woodbury (Opción B):</strong> 250+ outlets",
+            checklist: ["Descuentos de fin de temporada en Macy's.", "Empaquetar compras secundarias en casa base."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "Grand Central Food Hall", addr: "87 E 42nd St", q: "Grand Central Food Hall" },
+                { g: "Rápido", name: "Los Tacos No. 1 — Times Square", addr: "229 W 43rd St", q: "Los Tacos No 1 229 W 43rd St New York" },
+                { g: "Alternativa", name: "7th Street Burger", addr: "485 7th Ave", q: "7th Street Burger 485 7th Ave New York" }
+            ],
+            budgetPax: "$70", budgetGroup: "$210"
+        },
+        {
+            day: 13, date: "Viernes 25 de Septiembre", badge: "Cena de Despedida",
+            title: "PROTAGONISTA: Cena de Despedida 🍷 — Starbucks Roastery + Meatpacking",
+            zone: "Meatpacking District, Chelsea & Midtown",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=14th+St+Station,+NY&destination=Times+Square,+NY&waypoints=Starbucks+Reserve+Roastery+New+York,+NY%7CGoogle+Store+Chelsea,+NY%7CMeatpacking+District,+NY",
+            buffer: "☕ Este día casi entero es el bloque de espontaneidad obligado: de 15:30 a 18:00 = recuerdos + fotos pendientes + café sin destino.",
+            rain: "Todo interior cerca de 9th Ave: Roastery, Google Store, Chelsea Market.",
+            steps: [
+                { t: "09:30 - 10:30", a: "🚆 LIRR + Metro A/C/E a 14th St.", l: "imp" },
+                { t: "10:30 - 12:30", a: "☕ <strong>PROTAGONISTA #1: Starbucks Reserve Roastery</strong> (61 9th Ave): palacio café de 3 pisos, tostadoras en vivo.", l: "must", q: "Starbucks Reserve Roastery New York" },
+                { t: "12:30 - 13:30", a: "📱 Google Store Chelsea (frente a Chelsea Market).", l: "opt", q: "Google Store Chelsea" },
+                { t: "13:30 - 15:30", a: "👗 <strong>PROTAGONISTA #2: Meatpacking District</strong> — calles empedradas (Sex and the City).", l: "imp", q: "Meatpacking District New York" },
+                { t: "15:30 - 18:00", a: "🌿 BLOQUE DE ESPONTANEIDAD: tiempo libre para recuerdos, fotos pendientes o café sin dirección.", l: "opt" },
+                { t: "18:30 - 21:00", a: "🍷 <strong>PROTAGONISTA #3: CENA DE DESPEDIDA</strong> — gala familiar (ej. Carmine's, Times Square) con brindis por el viaje perfecto.", l: "must", q: "Carmine's Times Square" }
+            ],
+            cinema: [
+                { n: "Sex and the City (1998-2004)", d: "El Meatpacking es el barrio glam de Carrie y Samantha." },
+                { n: "El Diablo Viste a la Moda (2006)", d: "Cerca de las 'oficinas' de Runway." }
+            ],
+            iconicStores: "<strong>Starbucks Reserve Roastery NYC</strong> · <strong>Google Store Chelsea</strong>",
+            checklist: ["Café de autor o espresso martini en Roastery.", "Gadgets en Google Chelsea.", "Adoquines del Meatpacking.", "Brindis de despedida en la cena."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "7th Street Burger — Chelsea", addr: "171 W 23rd St", q: "7th Street Burger 171 W 23rd St New York" },
+                { g: "Rápido", name: "Chelsea Market", addr: "75 9th Ave", q: "Chelsea Market" },
+                { g: "Alternativa", name: "The Standard Grill (Meatpacking)", addr: "848 Washington St", q: "The Standard Grill 848 Washington St New York" }
+            ],
+            budgetPax: "$100", budgetGroup: "$300"
+        },
+        {
+            day: 14, date: "Sábado 26 de Septiembre", badge: "Último Día",
+            title: "PROTAGONISTA: Última Escapada a Times Square 🗽 + Vuelo Nocturno de Regreso",
+            zone: "Valley Stream, Midtown ➔ Aeropuerto JFK",
+            mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Valley+Stream+Station,+NY&destination=John+F.+Kennedy+International+Airport&waypoints=Times+Square,+NY%7CGrand+Central+Market,+NY",
+            buffer: "☕ Suave toda la mañana: hasta las 15:30 no hay cronómetro real — si pide café lento en casa, ese es el plan.",
+            rain: "El día es ~50% interior por diseño: Mall + Line Friends + Grand Central Market.",
+            steps: [
+                { t: "09:00 - 12:30", a: "Compras finales de cierre + maletas y pesaje en Valley Stream.", l: "imp", q: "Green Acres Mall Valley Stream" },
+                { t: "12:30 - 14:00", a: "🍽️ Almuerzo relajado en Long Island.", l: "imp" },
+                { t: "15:30 - 19:30", a: "🗽 <strong>PROTAGONISTA: ÚLTIMA ESCAPADA A MANHATTAN</strong> — Line Friends & BT21 en Times Square + recuerdos comestibles en Grand Central Market.", l: "must", q: "Line Friends Times Square" },
+                { t: "20:00 - 21:30", a: "LIRR de regreso a Valley Stream por el equipaje.", l: "imp" },
+                { t: "22:00 - 22:30", a: "🚖 Uber/Taxi Valley Stream ➔ JFK (15 min).", l: "imp" },
+                { t: "01:00 AM (27 sept)", a: "✈️ <strong>VUELO DE REGRESO A CASA.</strong> ¡Fin del viaje!", l: "must" }
+            ],
+            cinema: [
+                { n: "Capitán América: Primer Vengador", d: "Steve Rogers despierta perplejo por las luces de Times Square." }
+            ],
+            iconicStores: "<strong>Line Friends Times Square</strong> · <strong>Grand Central Market: recuerdos comestibles</strong>",
+            checklist: ["Cerrar maletas sin afán.", "Souvenirs gastronómicos en Grand Central Market.", "Última foto bajo las luces de Times Sq.", "Uber corto 15 min a JFK a las 22:00."],
+            court: "N/A",
+            food: [
+                { g: "Recomendado", name: "Raising Cane's — Times Square", addr: "1501 Broadway", q: "Raising Cane's 1501 Broadway New York" },
+                { g: "Rápido", name: "Los Tacos No. 1 — Times Square", addr: "229 W 43rd St", q: "Los Tacos No 1 229 W 43rd St New York" },
+                { g: "Alternativa", name: "7th Street Burger — Bryant Park", addr: "11 W 42nd St", q: "7th Street Burger 11 W 42nd St New York" }
+            ],
+            budgetPax: "$70", budgetGroup: "$210"
+        }
+    ]; }
+
+    /* ============ DATOS RESTAURADOS DEL BACKUP (ruta paso a paso + lo esencial) ============ */
+    const ROUTES = {
+        1: `<strong>Ruta exacta paso a paso:</strong><br>• Estación LIRR Valley Stream ➔ Grand Central Madison.<br>• Caminata al oeste por 42nd St pasando por la NY Public Library y Bryant Park.<br>• Continuar por 42nd St hasta Broadway / 7th Ave para ingresar al corazón luminoso de Times Square.`,
+        2: `<strong>Ruta exacta paso a paso:</strong><br>• Salida de Penn Station ➔ Caminar a 9th Ave con 34th St (B&H Photo).<br>• Caminar al este por 34th St pasando por Macy's Herald Square y Empire State.<br>• Bajar por Broadway hasta 23rd St: Flatiron Building y Harry Potter NY.<br>• Conectar por 23rd St al oeste para subir al parque elevado High Line hacia el sur (Chelsea Market) ➔ Pier 55 & Pier 57.<br>• Metro 7 directo de Hudson Yards/34th St a Vernon Blvd-Jackson Ave en Queens (Gantry Plaza).`,
+        3: `<strong>Ruta exacta paso a paso:</strong><br>• Vuelo JFK/LGA ➔ Buffalo (BUF) (1h 15m).<br>• Taxi/Uber a Fashion Outlets de Niágara y Niagara Falls State Park.<br>• Dentro de Niágara: parque 100% accesible a pie.`,
+        4: `<strong>Ruta exacta paso a paso:</strong><br>• Embarque Maid of the Mist en Prospect Point.<br>• Cruzar el puente peatonal hacia Goat Island para visitar las tiendas de arce e ingresar a Cave of the Winds.<br>• Continuar caminando hacia las Tres Islas Hermanas (Three Sisters Islands).`,
+        5: `<strong>Ruta exacta paso a paso:</strong><br>• Traslado a Buffalo Airport (BUF) ➔ Vuelo a JFK/LGA.<br>• Taxi directo a Valley Stream (15 min).<br>• Green Acres Mall al lado de la casa base en Valley Stream.`,
+        6: `<strong>Ruta exacta paso a paso integrada:</strong><br>1. Estación Metro W 4th St ➔ Caminar a <strong>Washington Square Park</strong>.<br>2. Caminar a <strong>Joe's Pizza</strong> (7 Carmine St) y ver la cancha 'The Cage' (6th Ave & W 4th St).<br>3. Caminar por Greenwich Village hasta <strong>Edificio de Friends</strong> (90 Bedford St / Grove St).<br>4. Bajar al sur hacia Tribeca a <strong>Ghostbusters Firehouse</strong> (14 N Moore St).<br>5. Subir al este por Broome/Spring St para explorar <strong>SoHo</strong> (KITH en Lafayette St).<br>6. Conectar directo a <strong>Mulberry St en Little Italy</strong>.<br>7. Continuar al sur por Mulberry/Mott St ingresando a <strong>Chinatown, Doyers St y Columbus Park</strong>.`,
+        7: `<strong>Ruta exacta paso a paso:</strong><br>• Metro Fulton St ➔ Caminar al este a South Street Seaport (Pier 17).<br>• Caminar al oeste por Fulton St hacia The Oculus (World Trade Center) y Eataly.<br>• Bajar por Broadway hasta Bowling Green (punto de encuentro Free Tour).<br>• Recorrido a pie guiado por Wall St, Trinity Church, Federal Hall y cierre en el 9/11 Memorial.`,
+        8: `<strong>Ruta exacta paso a paso:</strong><br>• Metro 1 a South Ferry ➔ Embarque en Castle Clinton (Battery Park).<br>• Ferry Oficial ➔ Liberty Island ➔ Ellis Island ➔ Retorno a Battery Park.<br>• Metro 1 norte a <em>59 St - Columbus Circle</em>.<br>• Caminata por Central Park Sur visitando Wollman Rink, Bethesda Fountain y salida hacia The Plaza Hotel / Quinta Avenida.`,
+        9: `<strong>Ruta exacta paso a paso integrada:</strong><br>1. Metro High St Station ➔ Caminar a <strong>Brooklyn Heights Promenade</strong>.<br>2. Bajar a Brooklyn Bridge Park y ver las canchas de básquetbol en <strong>Pier 2</strong>.<br>3. Subir a la rampa de acceso para cruzar la pasarela de madera del <strong>Puente de Brooklyn</strong>.<br>4. Ingresar a <strong>DUMBO</strong> por Washington St (foto con Manhattan Bridge & Loft de Dan Humphrey de Gossip Girl).<br>5. Entrar a <strong>Empire Stores / Time Out Market</strong> y probar galletas en <strong>Jacques Torres Chocolate</strong> (66 Water St).`,
+        10: `<strong>Ruta exacta paso a paso:</strong><br>• LIRR a Grand Central Madison ➔ Entrada directa a SUMMIT One Vanderbilt.<br>• Nave principal de Grand Central Terminal ➔ Salida a Quinta Avenida.<br>• Caminar al norte por la 5th Ave pasando por la <strong>NBA Store</strong> (45th St), Catedral de San Patricio (50th St) e ingresar a <strong>Rockefeller Plaza</strong> (Nintendo NY, LEGO Store y FAO Schwarz).`,
+        11: `<strong>Ruta exacta paso a paso:</strong><br>• Metro a 81 St (AMNH) o 86th St (MET).<br>• Para Harlem: tomar Metro 2/3 o A/B/C/D hacia 125th St (Apollo Theater & Malcolm Shabazz Market).<br>• Continuar en Metro B/D al norte hasta 155th St para llegar directamente a Rucker Park.`,
+        12: `<strong>Ruta exacta paso a paso:</strong><br>• Opción A (protagonista): LIRR a Penn Station ➔ caminata a Herald Square (Macy's, Uniqlo, Manhattan Mall).<br>• Opción B (alternativa): bus Coach USA desde Port Authority (42nd St & 8th Ave) directo a Woodbury Outlets (1 hora).`,
+        13: `<strong>Ruta exacta paso a paso:</strong><br>• Metro A/C/E a 14th St con 8th Ave.<br>• Caminar a 9th Ave & 15th St: Starbucks Reserve Roastery ➔ Google Store en 15th St.<br>• Calles empedradas de Meatpacking District ➔ traslado a Midtown para la cena especial.`,
+        14: `<strong>Ruta exacta paso a paso:</strong><br>• LIRR Valley Stream ➔ Grand Central / Times Square ➔ LIRR de regreso a Valley Stream.<br>• Uber directo desde Valley Stream a JFK Airport (solo 12 km, 15 minutos).`
+    };
+
+    const HIGHLIGHTS = {
+        1: "Llegada 6AM, Tanger Outlets, caminata 42nd St, Bryant Park y Times Square (Avengers, Spider-Man, Birdman)",
+        2: "B&H Photo, Macy's, Empire State (Elf), Flatiron (Daily Bugle), Harry Potter NY, High Line y Gantry Plaza",
+        3: "Vuelo a Buffalo, Fashion Outlets, Prospect Point (Bruce Almighty, Superman II) y show nocturno de luces",
+        4: "Maid of the Mist, Goat Island, The Maple Shop, Cave of the Winds (Hurricane Deck) y cena de cumpleaños",
+        5: "Paseo matutino por Niágara, vuelo de retorno y compras en Green Acres Mall",
+        6: "Washington Sq (Avengers), Joe's Pizza (Spider-Man 2), The Cage, Friends, Cazafantasmas, KITH, Little Italy y Chinatown",
+        7: "South Street Seaport (Pier 17), The Oculus, Eataly, Bolsa de NY (Batman), Trinity Church y 9/11 Memorial",
+        8: "Ferry a la Estatua de la Libertad, Ellis Island, Central Park Sur, Hotel Plaza, Bethesda y Apple Fifth Avenue",
+        9: "Brooklyn Heights Promenade, Pier 2, caminata del Puente de Brooklyn, DUMBO (Gossip Girl) y Time Out Market",
+        10: "SUMMIT One Vanderbilt, Grand Central (Avengers), NBA Store, Rockefeller, Nintendo NY, LEGO y FAO Schwarz",
+        11: "AMNH (Una Noche en el Museo), MET (Gossip Girl), Harlem (Apollo, Malcolm Shabazz) y Rucker Park",
+        12: "Macy's Herald Square en Herald Square o (opción B) Woodbury Common Premium Outlets",
+        13: "Starbucks Reserve Roastery, Google Store Chelsea, Meatpacking District (Sex and the City) y cena de despedida",
+        14: "Green Acres Mall, Line Friends Times Square, Grand Central Market y vuelo nocturno de regreso"
+    };
+
+    function moviesData() { return [
+        { id: "joes-pizza", movie: "Spider-Man 2 (2004)", place: "Joe's Pizza (7 Carmine St)", cat: "marvel-dc", day: 6, color: "border-red-200 bg-red-50/70", badge: "🍕 Pizza Time!", scene: "Tobey (Peter) es repartidor: 29 min para 8 pizzas. Se cambia a Spidey en un armario y corre por los techos del Village." },
+        { id: "friends-apt", movie: "Friends (1994-2004)", place: "Edificio de Friends (90 Bedford St)", cat: "tv-shows", day: 6, color: "border-purple-200 bg-purple-50/70", badge: "📺 Serie Mítica", scene: "La fachada roja con balcones de hierro que abre cada episodio: la casa de Monica, Rachel, Chandler y Joey." },
+        { id: "fao-big", movie: "Big (1988)", place: "FAO Schwarz (30 Rockefeller)", cat: "classics", day: 10, color: "border-amber-200 bg-amber-50/70", badge: "🎹 Piano Gigante", scene: "Tom Hanks y Robert Loggia bailan 'Heart and Soul' sobre el piano de suelo gigante." },
+        { id: "home-alone", movie: "Mi Pobre Angelito 2 (1992)", place: "The Plaza & Bethesda Terrace", cat: "classics", day: 8, color: "border-emerald-200 bg-emerald-50/70", badge: "🎄 Clásico Navideño", scene: "Kevin entra al Plaza con la tarjeta de su papá y conoce a la Sra. de las Palomas en la Fuente de Bethesda." },
+        { id: "night-museum", movie: "Una Noche en el Museo (2006)", place: "AMNH (Upper West Side)", cat: "classics", day: 11, color: "border-amber-200 bg-amber-50/70", badge: "🦖 Rexy en Vivo", scene: "El nuevo guardia (Ben Stiller) descubre que el T-Rex cobra vida en el hall principal." },
+        { id: "avengers-wsp", movie: "Avengers: Infinity War (2018)", place: "Washington Square Park", cat: "marvel-dc", day: 6, color: "border-red-200 bg-red-50/70", badge: "💥 Invasión Alien", scene: "La Q-Ship de Thanos aterra sobre el parque; Iron Man, Strange, Banner y Wong vs la Black Order." },
+        { id: "ghostbusters", movie: "Ghostbusters (1984)", place: "Hook & Ladder 8 (14 N Moore St)", cat: "classics", day: 6, color: "border-red-200 bg-red-50/70", badge: "👻 Sede Oficial", scene: "La estación real donde Bill Murray y el equipo estacionan el Ecto-1." },
+        { id: "office-mist", movie: "The Office (Temporada 6)", place: "Maid of the Mist (Niágara)", cat: "tv-shows", day: 4, color: "border-sky-200 bg-sky-50/70", badge: "💍 Jim & Pam", scene: "Se escapan de su propia boda caótica para casarse con ponchos azules a bordo del barco." },
+        { id: "flatiron", movie: "Trilogía Spidey (Raimi)", place: "Flatiron Building (175 5th Ave)", cat: "marvel-dc", day: 2, color: "border-red-200 bg-red-50/70", badge: "📰 Daily Bugle", scene: "El edificio-plancha como sede del periódico donde Peter vende fotos de Spider-Man." },
+        { id: "bane", movie: "Dark Knight Rises (2012)", place: "Bolsa de NY (Wall St)", cat: "marvel-dc", day: 7, color: "border-slate-200 bg-slate-100", badge: "🦇 Bane", scene: "Bane y sus mercenarios asaltan la Bolsa de Valores; persecución en moto de Batman." },
+        { id: "met-steps", movie: "Gossip Girl (2007-2012)", place: "Escalinatas del MET", cat: "tv-shows", day: 11, color: "border-purple-200 bg-purple-50/70", badge: "👑 MET Steps", scene: "Blair y Serena con su yogurt diario sentadas en lo alto de las escalinatas." },
+        { id: "bruce", movie: "Bruce Almighty (2003)", place: "Prospect Point (Niágara)", cat: "classics", day: 3, color: "border-amber-200 bg-amber-50/70", badge: "🎤 Jim Carrey Live", scene: "Transmisión en vivo desastrosa con poncho amarillo bajo la llovizna: 'Back to you, Studio!'." }
+    ]; }
+
+    const bingoItems = [
+        { id: "bg1", title: "🍕 Rebanada en Joe's Pizza", icon: "fa-pizza-slice" },
+        { id: "bg2", title: "📸 Foto al edificio de Friends", icon: "fa-tv" },
+        { id: "bg3", title: "🎹 Nota en el piano de FAO (Big)", icon: "fa-music" },
+        { id: "bg4", title: "⛲ Fuente de Bethesda como Kevin", icon: "fa-holly-berry" },
+        { id: "bg5", title: "👻 Logo de Cazafantasmas en el piso", icon: "fa-ghost" },
+        { id: "bg6", title: "🦖 Rexy el T-Rex en AMNH", icon: "fa-bone" },
+        { id: "bg7", title: "🚢 Poncho azul en Maid of the Mist", icon: "fa-ship" },
+        { id: "bg8", title: "📰 Foto al Flatiron (Daily Bugle)", icon: "fa-newspaper" }
+    ];
+
+    const prepItems = [
+        { id: "p1", title: "Pasaportes vigentes + ESTA aprobada (con anticipación)" },
+        { id: "p2", title: "Reservar ferry Statue City Cruises (Día 8, 9:30 AM) — se llena rápido" },
+        { id: "p3", title: "Reservar entrada a SUMMIT One Vanderbilt (Día 10, primera franja de mañana)" },
+        { id: "p4", title: "Ticket AMNH (Día 11); el MET se decide en el día (🟡)" },
+        { id: "p5", title: "Maid of the Mist (Día 4): ticket online o taquilla temprano" },
+        { id: "p6", title: "Reservar cena de Cumpleaños (Día 4) y Despedida en Carmine's (Día 13)" },
+        { id: "p7", title: "Boleto de bus a Woodbury (solo si eligen Opción B el Día 12)" },
+        { id: "p8", title: "LIRR/Metro: tarjeta sin contacto (OMNY) o boletos listos" },
+        { id: "p9", title: "Google Maps con NYC/Niágara descargadas offline" },
+        { id: "p10", title: "Seguro de viaje / cobertura médica verificado" }
+    ];
+
+    const foodFull = [
+        { name: "Los Tacos No. 1", cat: "Tacos · Times Square", link: "Los+Tacos+No+1+Times+Square", info: "229 W 43rd St. Encaja Días 1, 12 y 14." },
+        { name: "Joe's Pizza", cat: "Pizza · Greenwich Village", link: "Joe%27s+Pizza+7+Carmine+St+New+York", info: "7 Carmine St. Escena de Spider-Man 2 ('Pizza Time!')." },
+        { name: "7th Street Burger", cat: "Burgers · multi-sucursal", link: "7th+Street+Burger+New+York", info: "Times Sq (485 7th Ave), Bryant Park (11 W 42nd), SoHo (250 Mulberry), Chelsea (171 W 23rd) y UWS (424 Amsterdam)." },
+        { name: "Raising Cane's", cat: "Pollo · multi-sucursal", link: "Raising+Cane%27s+New+York", info: "Times Sq (1501 Broadway), Penn (1 Penn Plaza), Harlem (124 W 125th)." },
+        { name: "Chick-fil-A", cat: "Fast food · multi-sucursal", link: "Chick+fil+A+New+York", info: "219 W 34th, 50 E 42nd, 216 W 125th y 1536 3rd Ave." },
+        { name: "Katz's Delicatessen", cat: "Deli · Lower East Side", link: "Katz%27s+Delicatessen+New+York", info: "205 E Houston St. Clásico absoluto; encaja con el día de Chinatown/LES." },
+        { name: "Lexington Candy Shop", cat: "Diner · Upper East Side", link: "Lexington+Candy+Shop+New+York", info: "1226 Lex & E 83rd. Diner de 1927 con soda-fountain; ideal el Día 11." },
+        { name: "Wah Fung No. 1", cat: "Cantonés · Chinatown", link: "Wah+Fung+No+1+79+Chrystie+St+New+York", info: "79 Chrystie St. Cash only. Mar-Dom 9–19; cierra lunes." },
+        { name: "Jin Mei Dumpling", cat: "Dumplings · Chinatown", link: "Jin+Mei+Dumpling+New+York", info: "25B Henry St. Abierto diario 11:00–20:30." },
+        { name: "Shu Jiao Fuzhou", cat: "Fuzhou · Chinatown/LES", link: "Shu+Jiao+Fuzhou+New+York", info: "295 Grand St. Dumplings y noodles." },
+        { name: "Smashy Club", cat: "Smash burger · Union Sq", link: "Smashy+Club+Union+Square+New+York", info: "42 Union Sq E. Contador compacto, ideal almuerzo rápido." }
+    ];
+
+    const mapLocations = [
+        { name: "🍕 Joe's Pizza", lat: 40.7305, lng: -74.0021, type: "cinema", desc: "Día 6: 'Pizza Time!' (Spider-Man 2)" },
+        { name: "📺 Edificio de FRIENDS", lat: 40.7325, lng: -74.0053, type: "cinema", desc: "Día 6: 90 Bedford St" },
+        { name: "👻 Ghostbusters HQ", lat: 40.7196, lng: -74.0066, type: "cinema", desc: "Día 6: Hook & Ladder 8, Tribeca" },
+        { name: "🎹 FAO Schwarz", lat: 40.7634, lng: -73.9744, type: "cinema", desc: "Día 10: piano de 'Big'" },
+        { name: "⛲ Bethesda Terrace", lat: 40.7740, lng: -73.9708, type: "cinema", desc: "Día 8: Home Alone 2 & Avengers" },
+        { name: "🦖 Museo de Historia Natural", lat: 40.7813, lng: -73.9739, type: "cinema", desc: "Día 11: Una Noche en el Museo" },
+        { name: "📰 Flatiron Building", lat: 40.7411, lng: -73.9897, type: "cinema", desc: "Día 2: Daily Bugle" },
+        { name: "🦇 Wall Street", lat: 40.7069, lng: -74.0090, type: "cinema", desc: "Día 7: Dark Knight Rises & National Treasure" },
+        { name: "🐉 Chinatown", lat: 40.7158, lng: -73.9970, type: "attraction", desc: "Día 6: Doyers St y Columbus Park" },
+        { name: "🇮🇹 Little Italy", lat: 40.7191, lng: -73.9973, type: "attraction", desc: "Día 6: Mulberry St & Ferrara" },
+        { name: "🚉 Valley Stream (base LIRR)", lat: 40.6622, lng: -73.7049, type: "transport", desc: "Casa base del LIRR (35 min a Manhattan)" },
+        { name: "🛍️ Green Acres Mall", lat: 40.6628, lng: -73.7225, type: "shopping", desc: "Días 5 & 14" },
+        { name: "🚉 Grand Central & SUMMIT", lat: 40.7527, lng: -73.9772, type: "transport", desc: "Día 10: LIRR + Avengers + SUMMIT" },
+        { name: "🌿 Greenacre Park", lat: 40.7578, lng: -73.9672, type: "attraction", desc: "Día 10: ancla de pausa" },
+        { name: "📚 SNFL Rooftop", lat: 40.7538, lng: -73.9800, type: "attraction", desc: "Día 10: terraza gratuita" },
+        { name: "🌃 M Social Rooftop", lat: 40.7625, lng: -73.9827, type: "attraction", desc: "Día 1 (18+)" },
+        { name: "🚉 Penn Station", lat: 40.7506, lng: -73.9935, type: "transport", desc: "Llegada LIRR Midtown" },
+        { name: "📸 B&H Photo", lat: 40.7531, lng: -73.9963, type: "shopping", desc: "Día 2" },
+        { name: "👟 KITH SoHo", lat: 40.7258, lng: -73.9966, type: "shopping", desc: "Día 6" },
+        { name: "🍏 Apple 5th Ave", lat: 40.7638, lng: -73.9729, type: "shopping", desc: "Día 8" },
+        { name: "🏀 NBA Store", lat: 40.7551, lng: -73.9791, type: "shopping", desc: "Día 10" },
+        { name: "🏀 The Cage (W 4th)", lat: 40.7308, lng: -74.0007, type: "basketball", desc: "Día 6: streetball" },
+        { name: "🏀 Rucker Park", lat: 40.8296, lng: -73.9363, type: "basketball", desc: "Día 11: Uncle Drew" },
+        { name: "Times Square", lat: 40.7580, lng: -73.9855, type: "attraction", desc: "Días 1 & 14" },
+        { name: "🗽 Estatua de la Libertad", lat: 40.6973, lng: -74.0447, type: "attraction", desc: "Día 8: X-Men" },
+        { name: "🌉 Puente de Brooklyn & DUMBO", lat: 40.7061, lng: -73.9969, type: "attraction", desc: "Día 9: Gossip Girl" },
+        { name: "🌊 Cataratas del Niágara", lat: 43.0828, lng: -79.0742, type: "attraction", desc: "Días 3–5" }
+    ];
+
+    /* ============ TIEMPO ============ */
+    function daysDiff() {
+        const now = new Date();
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return Math.round((d - TRIP_START) / 86400000) + 1;
+    }
+    function todayDayNum() { const x = daysDiff(); return x < 1 ? 1 : (x > N_DAYS ? N_DAYS : x); }
+    function isTripToday() { const x = daysDiff(); return x >= 1 && x <= N_DAYS; }
+    function parseTimes(t) {
+        const m = t.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+        if (!m) return null;
+        return [+m[1] * 60 + +m[2], +m[3] * 60 + +m[4]];
+    }
+
+    /* ============ ESTADO POR ACTIVIDAD ============ */
+    function currentState(dayNum, cur, i) {
+        if (state.done[`d${dayNum}s${i}`]) return '✅ Completada';
+        if (cur) {
+            if (cur.now === i) return '🟢 Ahora';
+            if (cur.next === i) return '🔵 Próxima';
+        }
+        return '';
+    }
+
+    /* ============ TARJETA DE ACTIVIDAD ============ */
+    /* Consultas de Maps para pasos logísticos que no tienen lugar propio (complementan s.q) */
+    const STEP_Q = {
+        'd1s0': "JFK Airport New York", 'd1s1': "Valley Stream Station New York", 'd1s3': "Valley Stream Station New York",
+        'd2s0': "Penn Station New York",
+        'd3s0': "JFK Airport New York", 'd3s2': "Niagara Falls State Park", 'd3s4': "Niagara Falls State Park",
+        'd4s0': "Niagara Falls State Park", 'd4s2': "Top of the Falls Restaurant Niagara Falls", 'd4s5': "Niagara Falls State Park",
+        'd5s0': "Niagara Falls State Park", 'd5s1': "Buffalo Niagara International Airport", 'd5s2': "Valley Stream Station New York", 'd5s4': "Green Acres Mall Valley Stream",
+        'd6s0': "West 4th Street Station New York",
+        'd7s0': "Fulton Street Station New York",
+        'd8s0': "South Ferry Station New York", 'd8s5': "Midtown Manhattan New York",
+        'd9s0': "High Street Station Brooklyn",
+        'd10s0': "Grand Central Madison New York", 'd10s7': "Bryant Park New York",
+        'd11s0': "81st Street Museum of Natural History Station New York",
+        'd12s0': "Penn Station New York", 'd12s3': "Valley Stream Station New York",
+        'd13s0': "14th Street Station New York", 'd13s4': "Meatpacking District New York",
+        'd14s1': "Valley Stream New York", 'd14s3': "Valley Stream Station New York", 'd14s4': "JFK Airport New York", 'd14s5': "JFK Airport New York"
+    };
+
+    function mapsQuery(dayNum, i, s) {
+        if (s.q) return s.q;
+        if (STEP_Q[`d${dayNum}s${i}`]) return STEP_Q[`d${dayNum}s${i}`];
+        return (ITIN()[dayNum - 1].zone || 'New York City') + ' New York';
+    }
+
+    function actCard(dayNum, i, s, cur = null, scope = 'dias') {
+        const lvl = LVL[s.l] || LVL.imp;
+        const done = !!state.done[`d${dayNum}s${i}`];
+        const st = currentState(dayNum, cur, i);
+        const rid = `${scope}-${dayNum}-${i}`;
+        const qBtn = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery(dayNum, i, s))}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-3 py-2.5 min-h-[44px] rounded-lg active:scale-95 transition-all"><i class="fa-solid fa-location-dot"></i>📍 Ruta</a>`;
+        return `
+        <div id="act-${rid}" class="${done ? 'act-done' : ''} bg-white rounded-xl border ${done ? 'border-emerald-200' : 'border-slate-200'} p-3 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span class="text-[11px] font-bold bg-sky-50 text-sky-800 border border-sky-200 px-2 py-0.5 rounded-md whitespace-nowrap">${s.t}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${lvl.cls}">${lvl.tag}</span>
+                    </div>
+                    <p class="act-text text-xs text-slate-700 font-medium leading-relaxed">${s.a}</p>
+                </div>
+                <span id="st-${rid}" class="shrink-0 text-[10px] font-black whitespace-nowrap ${done ? 'text-emerald-700' : 'text-slate-400'}">${st}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                ${qBtn}
+                <button onclick="toggleDone(${dayNum},${i})" class="${done ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-900 text-white'} inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-2.5 min-h-[44px] rounded-lg active:scale-95 transition-all">
+                    ${done ? '<i class="fa-solid fa-check-double"></i> Hecho ✓' : '✓ Hecho'}
+                </button>
+            </div>
+        </div>`;
+    }
+
+    function toggleDone(dayNum, i) {
+        const k = `d${dayNum}s${i}`;
+        if (state.done[k]) delete state.done[k]; else state.done[k] = 1;
+        persist();
+        // Re-render completo de la vista activa: los ids son únicos por vista,
+        // así HOY y DÍAS nunca colisionan aunque ambas estén en el DOM.
+        if (activeTab === 'hoy') renderHOY();
+        else if (activeTab === 'dias') renderDayDetail(dayNum);
+    }
+
+    /* ============ HOY ============ */
+    function currentProgress(d) {
+        if (!isTripToday() || d !== todayDayNum()) return null;
+        const mins = new Date().getHours() * 60 + new Date().getMinutes();
+        const steps = ITIN()[d - 1].steps;
+        const startOf = (i) => { const p = parseTimes(steps[i].t); return p ? p[0] : null; };
+        let now = -1;
+        for (let i = 0; i < steps.length; i++) {
+            const p = parseTimes(steps[i].t);
+            if (p && mins >= p[0] && mins < p[1]) { now = i; break; }
+        }
+        const pendientes = steps.map((s, i) => i).filter(i => !state.done[`d${d}s${i}`]);
+        // Próxima = primer paso pendiente cuya hora de inicio AÚN no pasó.
+        // Si ya pasaron todas (o no tienen hora), el primer pendiente.
+        let next = pendientes.find(i => { const st = startOf(i); return st !== null && st > mins; });
+        if (next === undefined) next = pendientes.length ? pendientes[0] : -1;
+        // Nunca repetir la actividad que ya está "Ahora".
+        if (next === now) { const rest = pendientes.filter(i => i > now); next = rest.length ? rest[0] : -1; }
+        return { now, next };
+    }
+
+    function renderHOY() {
+        const view = document.getElementById("view-hoy");
+        const d = todayDayNum();
+        const data = ITIN()[d - 1];
+        const cur = currentProgress(d);
+        const doneToday = Object.keys(state.done).filter(k => k.startsWith(`d${d}s`)).length;
+        const pct = Math.min(100, Math.round(((d - 1) + doneToday / data.steps.length) / N_DAYS * 100));
+        const banner = isTripToday() ? '' : `
+            <div class="bg-amber-50 border border-amber-300 text-amber-900 rounded-2xl p-3 text-xs font-bold">
+                <i class="fa-solid fa-clock mr-1.5"></i>Fuera del rango del viaje (13–26 sept 2026). Mostrando el <strong>Día ${d}</strong> como referencia — usá la pestaña DÍAS para navegar.
+            </div>`;
+        const curCard = cur && cur.now !== -1 ? `
+            <div class="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-3.5">
+                <div class="text-[10px] font-black uppercase text-emerald-700 tracking-wider mb-1">🟢 Ahora</div>
+                <div class="text-xs font-extrabold text-slate-900 leading-snug">${data.steps[cur.now].t} — ${data.steps[cur.now].a}</div>
+            </div>` : '';
+        const nextCard = cur && cur.next !== -1 ? `
+            <div class="bg-sky-50 border border-sky-300 rounded-2xl p-3.5">
+                <div class="text-[10px] font-black uppercase text-sky-700 tracking-wider mb-1">🔵 Próxima</div>
+                <div class="text-xs font-bold text-slate-900 leading-snug">${data.steps[cur.next].t} — ${data.steps[cur.next].a}</div>
+            </div>` : '';
+
+        view.innerHTML = `
+            <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="min-w-0">
+                        <div class="text-[10px] font-black text-amber-400 uppercase tracking-widest">Día ${d} de ${N_DAYS} · HOY</div>
+                        <div class="text-sm font-extrabold">${data.date}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-2xl font-black text-sky-300">${pct}%</div>
+                        <div class="text-[10px] text-slate-400">del viaje</div>
+                    </div>
+                </div>
+                <div class="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-emerald-400 to-sky-400 transition-all" style="width:${pct}%"></div>
+                </div>
+                <a href="${data.mapsUrl}" target="_blank" rel="noopener noreferrer" class="mt-3 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-3 rounded-xl">
+                    <i class="fa-solid fa-map-location-dot"></i> 📍 Ruta del Día ${d} en Google Maps
+                </a>
+            </div>
+            ${banner}
+            ${HIGHLIGHTS[d] ? `<div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 leading-relaxed"><span class="font-black">Lo esencial del día:</span> ${HIGHLIGHTS[d]}</div>` : ''}
+            ${curCard || nextCard ? `<div class="grid ${curCard && nextCard ? 'grid-cols-2' : 'grid-cols-1'} gap-3">${curCard}${nextCard}</div>` : ''}
+            <div class="space-y-2.5">
+                ${data.steps.map((s, i) => actCard(d, i, s, cur, 'hoy')).join('')}
+            </div>
+            <div class="bg-white rounded-xl border border-dashed border-slate-300 p-3.5 text-xs text-slate-600">
+                <i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i>${data.buffer}
+            </div>
+            ${data.note ? `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900">${data.note}</div>` : ''}
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
+                <span class="font-black text-slate-700 block mb-1"><i class="fa-solid fa-cloud-rain text-sky-600 mr-1.5"></i>Plan B lluvia</span>
+                <p class="leading-relaxed">${data.rain}</p>
+            </div>
+            ${data.food && data.food.length ? `
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3.5">
+                <h3 class="text-[11px] font-black uppercase text-rose-800 tracking-wider mb-2">
+                    <i class="fa-solid fa-utensils text-rose-500 mr-1.5"></i>Gastronomía cerca (3)
+                    <a href="#" onclick="switchTab('extras');switchExtra('food');return false;" class="text-sky-700 font-bold ml-1">ver todo ↓</a>
+                </h3>
+                <div class="space-y-2">${data.food.map(f => `
+                    <div class="flex items-center justify-between gap-2 bg-rose-50 rounded-xl p-2.5 border border-rose-100">
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-rose-900 flex items-center gap-1.5"><span class="bg-rose-200 text-rose-900 text-[9px] px-1.5 py-0.5 rounded-full font-black shrink-0">${f.g}</span><span class="truncate">${f.name}</span></div>
+                            <div class="text-[10px] text-slate-500">${f.addr}</div>
+                        </div>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.q)}" target="_blank" rel="noopener noreferrer" class="shrink-0 inline-flex items-center justify-center bg-emerald-600 text-white text-[11px] font-bold px-3 min-h-[44px] min-w-[44px] rounded-lg"><i class="fa-solid fa-location-dot"></i></a>
+                    </div>`).join('')}
+                </div>
+            </div>` : ''}
+        `;
+    }
+
+    /* ============ DÍAS ============ */
+    function renderDayDetail(dayNum) {
+        state.day = dayNum; persist();
+        const data = ITIN()[dayNum - 1];
+        const d = dayNum;
+
+        const cinemaHTML = data.cinema.map(c => `
+            <div class="bg-amber-50/90 rounded-xl p-2.5 border border-amber-200/80 text-xs">
+                <div class="font-extrabold text-amber-900 mb-0.5"><i class="fa-solid fa-clapperboard text-amber-600 mr-1.5"></i>${c.n}</div>
+                <p class="text-slate-700 leading-snug">${c.d}</p>
+            </div>`).join('');
+
+        const checklistHTML = data.checklist.map((chk, idx) => `
+            <div class="flex items-start space-x-2 text-xs chk-line">
+                <input type="checkbox" id="chk-${d}-${idx}" ${state.chk[`d${d}c${idx}`] ? 'checked' : ''} onchange="state.chk['d${d}c${idx}']=this.checked?1:0;persist();" class="mt-0.5 w-4 h-4 rounded text-sky-600 cursor-pointer">
+                <label for="chk-${d}-${idx}" class="text-slate-700 leading-tight cursor-pointer">${chk}</label>
+            </div>`).join('');
+
+        const legend = ['must', 'imp', 'opt', 'extra'].map(k => `<span class="text-[10px] font-black px-2 py-1 rounded-md ${LVL[k].cls}">${LVL[k].tag}</span>`).join(' ');
+
+        document.getElementById("dayDetailCard").innerHTML = `
+            <div class="border-b border-slate-100 pb-3 mb-3">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <span class="bg-slate-900 text-white text-xs font-black px-2.5 py-0.5 rounded-lg">DÍA ${data.day}</span>
+                    <span class="text-xs text-slate-500 font-medium">${data.date}</span>
+                    ${data.badge ? `<span class="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">${data.badge}</span>` : ''}
+                </div>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900">${data.title}</h2>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap mb-3">${legend}</div>
+            <a href="${data.mapsUrl}" target="_blank" rel="noopener noreferrer" class="mb-4 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-md">
+                <i class="fa-solid fa-map-location-dot"></i> 📍 Ruta del Día ${data.day} en Google Maps
+            </a>
+            <div class="bg-sky-50 rounded-xl p-2.5 mb-4 border border-sky-100 flex items-start gap-2 text-xs text-sky-900">
+                <i class="fa-solid fa-location-dot text-sky-600 mt-0.5"></i>
+                <span><strong>Zona:</strong> ${data.zone}</span>
+            </div>
+            ${data.note ? `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-xs text-amber-900 leading-relaxed"><i class="fa-solid fa-bullseye mr-1.5"></i>${data.note}</div>` : ''}
+            ${HIGHLIGHTS[data.day] ? `<div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 mb-4 text-xs text-indigo-900 leading-relaxed"><span class="font-black">Lo esencial:</span> ${HIGHLIGHTS[data.day]}</div>` : ''}
+            ${ROUTES[data.day] ? `<div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-200 text-xs text-slate-700 leading-relaxed"><div class="text-[11px] font-black uppercase text-slate-500 tracking-wider mb-1.5"><i class="fa-solid fa-route text-sky-600 mr-1.5"></i>Ruta exacta (navegación)</div>${ROUTES[data.day]}</div>` : ''}
+            <div class="mb-4">
+                <h3 class="text-[11px] font-black uppercase text-slate-500 tracking-wider mb-2"><i class="fa-regular fa-clock text-sky-600 mr-1.5"></i>Actividades del día</h3>
+                <div class="space-y-2.5">${data.steps.map((s, i) => actCard(d, i, s, null, 'dias')).join('')}</div>
+            </div>
+            <div class="bg-white rounded-xl border border-dashed border-slate-300 p-3.5 mb-4 text-xs text-slate-600">
+                <i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i>${data.buffer}
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-xs text-slate-600">
+                <span class="font-black text-slate-700 block mb-1"><i class="fa-solid fa-cloud-rain text-sky-600 mr-1.5"></i>Si llueve</span>
+                <p class="leading-relaxed">${data.rain}</p>
+            </div>
+            <div class="mb-4 space-y-2">
+                <h3 class="text-[11px] font-black uppercase text-amber-800 tracking-wider"><i class="fa-solid fa-film mr-1.5"></i>Escenas de cine en esta ruta</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${cinemaHTML}</div>
+            </div>
+            <div class="mb-4">
+                <div class="bg-purple-50/90 rounded-xl p-3 border border-purple-200 text-xs">
+                    <div class="font-bold text-purple-900 mb-1"><i class="fa-solid fa-bag-shopping mr-1.5"></i>Tiendas &amp; malls del día</div>
+                    <div class="text-slate-700 leading-relaxed">${data.iconicStores}</div>
+                </div>
+            </div>
+            ${data.court !== 'N/A' ? `<div class="mb-4 bg-orange-50/80 rounded-xl p-3 border border-orange-200/80 text-xs text-orange-900">${data.court}</div>` : ''}
+            <div class="mb-4">
+                <h3 class="text-[11px] font-black uppercase text-slate-500 tracking-wider mb-2"><i class="fa-solid fa-list-check text-sky-600 mr-1.5"></i>Checklist del día</h3>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2">${checklistHTML}</div>
+            </div>
+            ${data.food && data.food.length ? `
+            <div class="mb-4">
+                <h3 class="text-[11px] font-black uppercase text-rose-800 tracking-wider mb-2"><i class="fa-solid fa-utensils text-rose-500 mr-1.5"></i>Gastronomía cerca</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">${data.food.map(f => `
+                    <div class="bg-rose-50 rounded-xl p-2.5 border border-rose-100 text-xs">
+                        <div class="font-bold text-rose-900 flex items-center gap-1 mb-1"><span class="bg-rose-200 text-rose-900 text-[9px] px-1.5 py-0.5 rounded-full font-black shrink-0">${f.g}</span>${f.name}</div>
+                        <div class="text-[10px] text-slate-500 mb-1.5">${f.addr}</div>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.q)}" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-2.5 min-h-[44px] rounded-lg inline-flex items-center gap-1"><i class="fa-solid fa-location-dot"></i>Maps</a>
+                    </div>`).join('')}
+                </div>
+            </div>` : ''}
+            <div class="bg-slate-900 text-white rounded-xl p-3.5 flex items-center justify-between text-xs">
+                <div>
+                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Presupuesto</span>
+                    <span class="font-bold text-sky-300 text-sm">${data.budgetPax} / pers</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Total 3 personas</span>
+                    <span class="font-bold text-emerald-400 text-sm">${data.budgetGroup}</span>
+                </div>
+            </div>`;
+        renderDayButtons();
+    }
+
+    function renderDayButtons() {
+        const d = state.day || 1;
+        document.getElementById("dayButtonsContainer").innerHTML = ITIN().map(x => `
+            <button onclick="renderDayDetail(${x.day});document.getElementById('dayDetailCard').scrollIntoView({behavior:'smooth'})"
+                class="px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-xl text-xs font-bold whitespace-nowrap ${x.day === d ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                Día ${x.day}${x.badge && x.badge.includes('Cumple') ? ' 🎂' : ''}
+            </button>`).join('');
+    }
+
+    /* ============ EXTRAS ============ */
+    function renderExtrasContent() {
+        document.getElementById("prepChecklist").innerHTML = prepItems.map(p => `
+            <div class="flex items-start space-x-2 text-xs chk-line bg-sky-50/60 rounded-xl p-2.5 border border-sky-100">
+                <input type="checkbox" id="prep-${p.id}" ${state.prep[p.id] ? 'checked' : ''} onchange="state.prep['${p.id}']=this.checked?1:0;persist();" class="mt-0.5 w-4 h-4 rounded text-sky-600 cursor-pointer">
+                <label for="prep-${p.id}" class="text-slate-700 leading-tight cursor-pointer">${p.title}</label>
+            </div>`).join('');
+        document.getElementById("rainList").innerHTML = ITIN().map(x => `
+            <details class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden text-xs">
+                <summary class="px-3 py-2.5 font-bold text-slate-700 cursor-pointer"><span class="bg-slate-900 text-white px-1.5 py-0.5 rounded text-[10px] font-black mr-1.5">D${x.day}</span>${x.title}</summary>
+                <p class="px-3 pb-3 text-slate-600 leading-relaxed">${x.rain}</p>
+            </details>`).join('');
+        renderFoodCards();
+        renderMovieCards();
+        renderBingoList();
+    }
+
+    function switchExtra(tab) {
+        activeExtra = tab;
+        ['prep', 'cinema', 'food', 'stores'].forEach(t => {
+            document.getElementById(`xview-${t}`).classList.toggle('hidden', t !== tab);
+            document.getElementById(`xtab-${t}`).className = t === tab ? 'py-3 min-h-[44px] rounded-xl bg-slate-900 text-white shadow-sm' : 'py-3 min-h-[44px] rounded-xl bg-slate-100 text-slate-700';
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ============ PELÍCULAS / BINGO / GASTRO FULL ============ */
+    let activeMovieCategory = 'all';
+
+    function renderMovieCards() {
+        const grid = document.getElementById("movieGrid");
+        if (!grid) return;
+        grid.innerHTML = moviesData().map(m => `
+            <div class="movie-card ${m.color} p-4 rounded-2xl border space-y-2 flex flex-col justify-between" data-category="${m.cat}" data-search="${(m.movie + ' ' + m.place + ' ' + m.scene).toLowerCase()}">
+                <div>
+                    <div class="flex items-center justify-between gap-1 flex-wrap mb-1">
+                        <span class="bg-slate-900 text-white text-[10px] font-black px-2 py-0.5 rounded-full">${m.movie}</span>
+                        <span class="text-[10px] font-bold bg-amber-400 text-slate-900 px-2 py-0.5 rounded-md whitespace-nowrap">Día ${m.day}</span>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-900">${m.place}</h3>
+                    <p class="text-xs text-slate-700 mt-1 leading-relaxed">${m.scene}</p>
+                </div>
+                <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-extrabold text-amber-800">${m.badge}</span>
+                    <button onclick="goToDayFromMovie(${m.day})" class="text-[11px] font-bold text-sky-700 whitespace-nowrap">Ver Día ${m.day} <i class="fa-solid fa-arrow-right ml-1 text-[9px]"></i></button>
+                </div>
+            </div>`).join('');
+        filterMovieCards();
+    }
+
+    function filterMovieCards() {
+        const q = (document.getElementById("movieSearchInput")?.value || '').toLowerCase();
+        document.querySelectorAll(".movie-card").forEach(c => {
+            const mq = c.dataset.search.includes(q);
+            const mc = activeMovieCategory === 'all' || c.dataset.category === activeMovieCategory;
+            c.classList.toggle('hidden', !(mq && mc));
+        });
+    }
+    function filterMovieCategory(cat) {
+        activeMovieCategory = cat;
+        ['all', 'marvel-dc', 'classics', 'tv-shows'].forEach(c => {
+            document.getElementById(`mcat-${c}`).className = c === cat ? "bg-slate-900 text-white px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full font-medium whitespace-nowrap shadow-sm" : "bg-slate-100 text-slate-700 px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-full font-medium whitespace-nowrap";
+        });
+        filterMovieCards();
+    }
+    function goToDayFromMovie(d) {
+        switchTab('dias'); renderDayDetail(d);
+        document.getElementById('dayDetailCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderBingoList() {
+        document.getElementById("bingoList").innerHTML = bingoItems.map(item => `
+            <div class="flex items-start space-x-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/80 text-xs">
+                <input type="checkbox" id="${item.id}" ${state.bingo[item.id] ? 'checked' : ''} onchange="state.bingo['${item.id}']=this.checked?1:0;persist();updateBingoCount()" class="mt-0.5 w-4 h-4 accent-amber-400 cursor-pointer">
+                <label for="${item.id}" class="text-slate-200 cursor-pointer leading-tight"><i class="fa-solid ${item.icon} text-amber-400 mr-1.5"></i>${item.title}</label>
+            </div>`).join('');
+        updateBingoCount();
+    }
+    function updateBingoCount() {
+        const n = bingoItems.filter(b => state.bingo[b.id]).length;
+        document.getElementById("bingoCounter").innerText = `${n} / ${bingoItems.length}`;
+    }
+
+    function renderFoodCards() {
+        document.getElementById("foodFullList").innerHTML = foodFull.map(f => `
+            <div class="bg-rose-50/70 p-4 rounded-2xl border border-rose-200 space-y-1.5">
+                <div class="flex justify-between gap-2 items-start">
+                    <h3 class="text-sm font-bold text-slate-900 flex-1">${f.name}</h3>
+                    <span class="text-[10px] font-bold bg-rose-200 text-rose-900 px-2 py-0.5 rounded-full whitespace-nowrap">${f.cat}</span>
+                </div>
+                <p class="text-xs text-slate-700 leading-relaxed">${f.info}</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=${f.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-[11px] font-bold px-3 py-2.5 min-h-[44px] rounded-xl"><i class="fa-solid fa-location-dot"></i>Abrir en Google Maps</a>
+            </div>`).join('');
+    }
+
+    /* ============ NAV & MAPA ============ */
+    let activeTab = 'hoy';
+    let map = null, markers = [];
+
+    function switchTab(tab) {
+        activeTab = tab;
+        ['hoy', 'dias', 'map', 'extras'].forEach(t => {
+            document.getElementById(`view-${t}`).classList.add('hidden');
+            document.getElementById(`tab-${t}`).className = `py-3 min-h-[48px] text-center border-b-2 ${t === tab ? 'border-sky-400 text-sky-400' : 'border-transparent text-slate-400'} transition-all`;
+        });
+        document.getElementById(`view-${tab}`).classList.remove('hidden');
+        if (tab === 'hoy') renderHOY();
+        if (tab === 'dias') renderDayDetail(state.day || 1);
+        if (tab === 'extras') renderExtrasContent();
+        if (tab === 'map') setTimeout(initMap, 120);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function initMap() {
+        if (typeof L === 'undefined') { showMapFallback(); return; }
+        try {
+            if (!map) {
+                map = L.map('map').setView([40.7450, -73.9880], 11);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+                drawMarkers('all');
+            } else setTimeout(() => map.invalidateSize(), 200);
+        } catch (e) { showMapFallback(); }
+    }
+    function showMapFallback() {
+        const el = document.getElementById('map');
+        if (el) el.innerHTML = '<div class="h-full flex items-center justify-center text-center text-xs text-slate-500 p-4">No se pudo cargar el mapa (sin conexión o CDN bloqueada).<br>Usá los botones 📍 Ruta de cada actividad.</div>';
+    }
+    function drawMarkers(cat) {
+        if (!map || typeof L === 'undefined') { initMap(); return; }
+        try {
+            markers.forEach(m => map.removeLayer(m));
+            markers = mapLocations
+                .filter(l => cat === 'all' || l.type === cat)
+                .map(l => L.marker([l.lat, l.lng]).addTo(map).bindPopup(
+                    `<div class="p-1"><strong class="text-xs">${l.name}</strong><p class="text-[11px] mt-1">${l.desc}</p></div>`));
+        } catch (e) { showMapFallback(); }
+    }
+
+    /* ============ ARRANQUE ============ */
+    window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        // Auto-detect de día por fecha real
+        if (isTripToday()) state.day = todayDayNum();
+        switchTab('hoy');
+    });
+    </script>
+</body>
+</html>
