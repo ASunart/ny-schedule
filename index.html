@@ -160,7 +160,7 @@
     /* ============ ESTADO + PERSISTENCIA (localStorage) ============ */
     const TRIP_START = new Date(2026, 8, 13); // 13 sept 2026
     const N_DAYS = 14;
-    const EMPTY_STATE = () => ({ done: {}, chk: {}, bingo: {}, prep: {}, day: 1 });
+    const EMPTY_STATE = () => ({ done: {}, chk: {}, bingo: {}, prep: {}, adapt: {}, day: 1 });
     let state = EMPTY_STATE();
     function plainObject(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
     function loadState() {
@@ -172,6 +172,7 @@
             chk: plainObject(raw.chk),
             bingo: plainObject(raw.bingo),
             prep: plainObject(raw.prep),
+            adapt: plainObject(raw.adapt),
             day: Number.isInteger(raw.day) && raw.day >= 1 && raw.day <= N_DAYS ? raw.day : 1
         };
     }
@@ -825,6 +826,102 @@
         else if (activeTab === 'dias') renderDayDetail(dayNum);
     }
 
+    /* ============ AJUSTE DINÁMICO MVP (FRONTEND) ============ */
+    const ARRIVAL_POINTS = [
+        { id: 'base', label: '🏠 Casa base (Valley Stream)', q: 'Valley Stream Station New York', area: 'longisland' },
+        { id: 'grand-central', label: '🚉 Grand Central', q: 'Grand Central Terminal New York', area: 'midtown' },
+        { id: 'penn', label: '🚉 Penn Station', q: 'Penn Station New York', area: 'midtown-west' },
+        { id: 'times-square', label: '🗽 Times Square', q: 'Times Square New York', area: 'midtown' },
+        { id: 'downtown', label: '🏙️ Downtown (SoHo/Wall St)', q: 'SoHo New York', area: 'downtown' },
+        { id: 'brooklyn', label: '🌉 Brooklyn (DUMBO)', q: 'DUMBO Brooklyn New York', area: 'brooklyn' },
+        { id: 'jfk', label: '✈️ JFK/LGA', q: 'JFK Airport New York', area: 'airport' },
+        { id: 'niagara', label: '🌊 Niágara', q: 'Niagara Falls State Park', area: 'niagara' }
+    ];
+
+    function dayAdapt(dayNum) {
+        const v = state.adapt?.[`d${dayNum}`];
+        if (!v || typeof v !== 'object') return { enabled: false, origin: 'base' };
+        const origin = ARRIVAL_POINTS.some(x => x.id === v.origin) ? v.origin : 'base';
+        return { enabled: !!v.enabled, origin };
+    }
+    function setDayAdapt(dayNum, patch) {
+        const cur = dayAdapt(dayNum);
+        state.adapt[`d${dayNum}`] = { ...cur, ...patch };
+        persist();
+    }
+    function setTodayOrigin(originId) {
+        const d = todayDayNum();
+        setDayAdapt(d, { origin: originId });
+        renderHOY();
+    }
+    function enableTodayAdjust() {
+        const d = todayDayNum();
+        setDayAdapt(d, { enabled: true });
+        renderHOY();
+    }
+    function resetTodayAdjust() {
+        const d = todayDayNum();
+        delete state.adapt[`d${d}`];
+        persist();
+        renderHOY();
+    }
+
+    function normalizeText(v) {
+        return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+    function areaByText(v) {
+        const t = normalizeText(v);
+        if (/niagara|buffalo|goat island|prospect point/.test(t)) return 'niagara';
+        if (/brooklyn|dumbo|high street|promenade|pier|bridge park/.test(t)) return 'brooklyn';
+        if (/harlem|rucker|apollo|amnh|met|central park|81st|uptown/.test(t)) return 'uptown';
+        if (/soho|chinatown|little italy|wall st|fulton|w 4th|greenwich|tribeca|washington square/.test(t)) return 'downtown';
+        if (/chelsea|high line|hudson|meatpacking|penn station|34th|herald square/.test(t)) return 'midtown-west';
+        if (/grand central|times square|rockefeller|5th ave|bryant park|midtown/.test(t)) return 'midtown';
+        if (/valley stream|green acres|deer park|jfk|lga|long island/.test(t)) return 'longisland';
+        return 'midtown';
+    }
+    function areaBucket(area) {
+        if (area === 'niagara') return 'niagara';
+        if (area === 'brooklyn') return 'brooklyn';
+        if (area === 'longisland' || area === 'airport') return 'outer';
+        return 'manhattan';
+    }
+    function areaCost(from, to) {
+        if (from === to) return 0;
+        const a = areaBucket(from), b = areaBucket(to);
+        if (a === b) return 1;
+        if (a === 'niagara' || b === 'niagara') return 6;
+        if ((a === 'manhattan' && b === 'brooklyn') || (a === 'brooklyn' && b === 'manhattan')) return 2;
+        if ((a === 'manhattan' && b === 'outer') || (a === 'outer' && b === 'manhattan')) return 3;
+        return 4;
+    }
+    function stepStartMinutes(step) {
+        const p = parseTimes(step?.t || '');
+        return p ? p[0] : 1440;
+    }
+    function stepArea(dayNum, idx, step) {
+        return areaByText(`${mapsQuery(dayNum, idx, step)} ${step?.a || ''} ${ITIN()[dayNum - 1]?.zone || ''}`);
+    }
+    function getTodaySteps(dayNum) {
+        const base = ITIN()[dayNum - 1].steps.map((s, i) => ({ ...s, _i: i }));
+        const adapt = dayAdapt(dayNum);
+        if (!adapt.enabled) return { steps: base, adapted: false, origin: adapt.origin };
+        const origin = ARRIVAL_POINTS.find(x => x.id === adapt.origin) || ARRIVAL_POINTS[0];
+        const flex = base.filter(s => !(s.l === 'must' || s.l === 'imp')).sort((a, b) => {
+            const pa = a.l === 'opt' ? 1 : 2;
+            const pb = b.l === 'opt' ? 1 : 2;
+            const sa = areaCost(origin.area, stepArea(dayNum, a._i, a)) * 10 + pa;
+            const sb = areaCost(origin.area, stepArea(dayNum, b._i, b)) * 10 + pb;
+            if (sa !== sb) return sa - sb;
+            const ta = stepStartMinutes(a), tb = stepStartMinutes(b);
+            if (ta !== tb) return ta - tb;
+            return a._i - b._i;
+        });
+        let k = 0;
+        const mixed = base.map(s => (s.l === 'must' || s.l === 'imp') ? s : flex[k++]);
+        return { steps: mixed, adapted: true, origin: origin.id };
+    }
+
     /* ============ HOY ============ */
     function currentProgress(d) {
         if (!isTripToday() || d !== todayDayNum()) return null;
@@ -850,9 +947,13 @@
         const view = document.getElementById("view-hoy");
         const d = todayDayNum();
         const data = ITIN()[d - 1];
-        const cur = currentProgress(d);
+        const adaptCfg = dayAdapt(d);
+        const todayPlan = getTodaySteps(d);
+        const todaySteps = todayPlan.steps;
+        const cur = todayPlan.adapted ? null : currentProgress(d);
         const doneToday = Object.keys(state.done).filter(k => k.startsWith(`d${d}s`)).length;
         const pct = Math.min(100, Math.round(((d - 1) + doneToday / data.steps.length) / N_DAYS * 100));
+        const arrivalOptions = ARRIVAL_POINTS.map(p => `<option value="${p.id}" ${p.id === adaptCfg.origin ? 'selected' : ''}>${p.label}</option>`).join('');
         const banner = isTripToday() ? '' : `
             <div class="bg-amber-50 border border-amber-300 text-amber-900 rounded-2xl p-3 text-xs font-bold">
                 <i class="fa-solid fa-clock mr-1.5"></i>Fuera del rango del viaje (13–26 sept 2026). Mostrando el <strong>Día ${d}</strong> como referencia — usá la pestaña DÍAS para navegar.
@@ -867,6 +968,22 @@
                 <div class="text-[10px] font-black uppercase text-sky-700 tracking-wider mb-1">🔵 Próxima</div>
                 <div class="text-xs font-bold text-slate-900 leading-snug">${data.steps[cur.next].t} — ${data.steps[cur.next].a}</div>
             </div>` : '';
+        const adjustCard = `
+            <div class="bg-white rounded-2xl border border-slate-200 p-3.5 space-y-2.5">
+                <div class="text-[11px] font-black uppercase text-slate-500 tracking-wider"><i class="fa-solid fa-compass-drafting text-sky-600 mr-1.5"></i>Ajuste rápido de ruta (MVP)</div>
+                <div class="grid sm:grid-cols-[1fr_auto_auto] gap-2.5 items-center">
+                    <select onchange="setTodayOrigin(this.value)" class="w-full px-3 py-2.5 min-h-[44px] text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        ${arrivalOptions}
+                    </select>
+                    <button onclick="enableTodayAdjust()" class="inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-2.5 min-h-[44px] rounded-xl">Recalcular</button>
+                    <button onclick="resetTodayAdjust()" class="inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2.5 min-h-[44px] rounded-xl">Plan base</button>
+                </div>
+                <p class="text-xs ${todayPlan.adapted ? 'text-emerald-700 font-bold' : 'text-slate-600'}">
+                    ${todayPlan.adapted
+                        ? 'Ruta ajustada activa: se reordenan solo pasos opcionales por cercanía al punto de llegada; MUST/IMPORTANTE se preservan.'
+                        : 'Modo base activo: selecciona de dónde llegan y toca “Recalcular” para ajustar el orden opcional del día.'}
+                </p>
+            </div>`;
 
         view.innerHTML = `
             <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-lg">
@@ -888,10 +1005,11 @@
                 </a>
             </div>
             ${banner}
+            ${adjustCard}
             ${HIGHLIGHTS[d] ? `<div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 leading-relaxed"><span class="font-black">Lo esencial del día:</span> ${HIGHLIGHTS[d]}</div>` : ''}
             ${curCard || nextCard ? `<div class="grid ${curCard && nextCard ? 'grid-cols-2' : 'grid-cols-1'} gap-3">${curCard}${nextCard}</div>` : ''}
             <div class="space-y-2.5">
-                ${data.steps.map((s, i) => actCard(d, i, s, cur, 'hoy')).join('')}
+                ${todaySteps.map(s => actCard(d, s._i, s, cur, 'hoy')).join('')}
             </div>
             <div class="bg-white rounded-xl border border-dashed border-slate-300 p-3.5 text-xs text-slate-600">
                 <i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i>${data.buffer}
