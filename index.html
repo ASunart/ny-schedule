@@ -195,11 +195,11 @@
     function ITIN() { return [
         {
             day: 1, date: "Domingo 13 de Septiembre",
-            title: "Llegada + Tanger Outlets + Noche en Times Square (🟡 jet lag)",
+            title: "Llegada + Tanger Outlets + Midtown Ligero (🟡 jet lag)",
             zone: "Long Island (Deer Park) & Midtown Manhattan",
             mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Valley+Stream+Station,+NY&destination=Times+Square,+NY&waypoints=Tanger+Outlets+Deer+Park,+NY%7CGrand+Central+Terminal,+NY%7CBryant+Park,+NY",
             buffer: "☕ Bloque de espontaneidad: café donde caigan y caminata sin horario. Con 6AM de llegada + jet lag, no fuerces nada después de las 20:00.",
-            rain: "Tanger y Times Square son mayormente cubiertos: si llueve de noche, refugiarse en Krispy Kreme / M&M's o volver temprano a Valley Stream.",
+            rain: "Tanger es cubierto y el cierre queda flexible: con lluvia o cansancio, priorizar regreso temprano a Valley Stream.",
             steps: [
                 { t: "06:00 - 08:30", a: "Llegada al Aeropuerto JFK/LGA. Inmigración y equipaje.", l: "imp" },
                 { t: "08:30 - 09:30", a: "Traslado en Uber/Taxi a la casa base en Valley Stream con el equipaje.", l: "imp" },
@@ -207,8 +207,8 @@
                 { t: "15:30 - 17:30", a: "Regreso a Valley Stream: guardar compras y descanso ligero pre-salida.", l: "imp" },
                 { t: "17:30 - 18:15", a: "🚆 LIRR a Manhattan: Valley Stream → Grand Central Madison (35 min).", l: "imp", q: "Grand Central Madison" },
                 { t: "18:15 - 19:30", a: "🚶 Caminata 42nd St: Chrysler, Bryant Park y Biblioteca Pública.", l: "opt", q: "Grand Central Terminal" },
-                { t: "19:30 - 21:30", a: "✨ <strong>Times Square Nocturno:</strong> escaleras TKTS, Krispy Kreme, M&M's World y Hershey's.", l: "opt", q: "Times Square" },
-                { t: "21:30 - 22:15", a: "🌃 Opcional — M Social Hotel Rooftop (solo mayores de 18). Si el jet lag pega fuerte, saltarlo.", l: "opt", q: "M Social Hotel Times Square" }
+                { t: "19:30 - 21:00", a: "🍽️ Cena ligera + regreso temprano a Valley Stream para recuperar energía del jet lag.", l: "imp" },
+                { t: "21:00 - 22:00", a: "⚪ Opcional corto (solo si hay energía): mini vistazo de Times Square o M Social Rooftop (18+). La visita nocturna principal se mueve al Plan A/B/C de los Días 10, 13 y 14.", l: "extra", q: "Times Square" }
             ],
             cinema: [
                 { n: "Spider-Man 2 & No Way Home", d: "Times Square: pantallas gigantes y pelea de Electro." },
@@ -216,7 +216,7 @@
                 { n: "Birdman (2014)", d: "Keaton en calzoncillos caminando entre la multitud real." }
             ],
             iconicStores: "<strong>Krispy Kreme (1601 Broadway):</strong> cascada de glaseado en vivo · <strong>M&M's World &amp; Hershey's:</strong> 3 pisos de dulces",
-            checklist: ["Admirar Grand Central Madison al llegar en el LIRR.", "Foto nocturna en las escaleras rojas de Times Square.", "Ver el 'Doughnut Theater' en Krispy Kreme.", "Llenar una bolsa en M&M's World."],
+            checklist: ["Admirar Grand Central Madison al llegar en el LIRR.", "Cena ligera y regreso temprano por jet lag.", "Guardar energía para Times Square nocturno (Plan A/B/C: Días 10, 13 y 14)."],
             court: "🏀 Chelsea Park Courts (28th & 10th Ave) — disponible si el grupo sale a caminar de noche.",
             food: [
                 { g: "Recomendado", name: "Los Tacos No. 1 — Times Square", addr: "229 W 43rd St", q: "Los Tacos No 1 229 W 43rd St New York" },
@@ -472,6 +472,7 @@
             title: "PROTAGONISTAS: SUMMIT 🔮 + Grand Central 🏛️ — Greenacre (ancla) · tiendas 🟡",
             zone: "Midtown East & Rockefeller Center",
             mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Grand+Central+Terminal,+NY&destination=FAO+Schwarz,+Rockefeller+Plaza,+NY&waypoints=SUMMIT+One+Vanderbilt,+NY%7CNBA+Store,+Fifth+Avenue,+NY%7CSt.+Patrick's+Cathedral,+Fifth+Avenue,+NY%7CNintendo+New+York,+NY",
+            note: "🗽 <strong>Plan A/B/C Times Square Nocturno:</strong> <strong>A = Día 10</strong> (hoy, primera opción). Si no se da por cansancio, clima o tiempos, pasa automático al <strong>Día 13</strong>; y si vuelve a no darse, cierre final en <strong>Día 14</strong>.",
             buffer: "🌿 Greenacre Park (217 E 51st) ES el ancla-buffers del día: cascada + bancos + café para respirar entre SUMMIT y las tiendas.",
             rain: "Día perfecto bajo lluvia: SUMMIT y las megatiendas son todas interiores.",
             steps: [
@@ -482,7 +483,9 @@
                 { t: "14:40 - 15:10", a: "📚 🟡 SNFL Rooftop (455 5th Ave, 7º piso): terraza pública gratuita, primero en llegar.", l: "opt", q: "Stavros Niarchos Foundation Library" },
                 { t: "15:10 - 15:50", a: "🏀 🟡 NBA Store (545 5th Ave): mini cancha interactiva, camisetas y trofeo Larry O'Brien.", l: "opt", q: "NBA Store Fifth Avenue New York" },
                 { t: "15:50 - 17:30", a: "🎮 🟡 Rockefeller Center: St. Patrick's + Nintendo NY (Bowser) + LEGO + FAO Schwarz (piano de Big).", l: "opt", q: "Rockefeller Center" },
-                { t: "17:30 - 19:00", a: "Plaza de Rockefeller + Bryant Park, regreso al LIRR.", l: "imp" }
+                { t: "17:30 - 19:00", a: "Plaza de Rockefeller + Bryant Park.", l: "imp" },
+                { t: "19:00 - 21:00", a: "✨ <strong>PLAN A — Times Square Nocturno</strong> (si hay energía): escaleras TKTS, luces y tiendas icónicas.", l: "opt", q: "Times Square" },
+                { t: "21:00 - 22:00", a: "🚆 Regreso al LIRR. Si no se hizo Times Square hoy, queda activo PLAN B (Día 13).", l: "imp" }
             ],
             cinema: [
                 { n: "Big (1988)", d: "Tom Hanks baila 'Heart and Soul' en el piano gigante de FAO Schwarz." },
@@ -561,6 +564,7 @@
             title: "PROTAGONISTA: Cena de Despedida 🍷 — Starbucks Roastery + Meatpacking",
             zone: "Meatpacking District, Chelsea & Midtown",
             mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=14th+St+Station,+NY&destination=Times+Square,+NY&waypoints=Starbucks+Reserve+Roastery+New+York,+NY%7CGoogle+Store+Chelsea,+NY%7CMeatpacking+District,+NY",
+            note: "🗽 <strong>Plan A/B/C Times Square Nocturno:</strong> si no se logró en el Día 10, hoy corre <strong>PLAN B</strong> tras la cena. Si hoy tampoco se da, queda <strong>PLAN C</strong> definitivo en el Día 14.",
             buffer: "☕ Este día casi entero es el bloque de espontaneidad obligado: de 15:30 a 18:00 = recuerdos + fotos pendientes + café sin destino.",
             rain: "Todo interior cerca de 9th Ave: Roastery, Google Store, Chelsea Market.",
             steps: [
@@ -569,7 +573,8 @@
                 { t: "12:30 - 13:30", a: "📱 Google Store Chelsea (frente a Chelsea Market).", l: "opt", q: "Google Store Chelsea" },
                 { t: "13:30 - 15:30", a: "👗 <strong>PROTAGONISTA #2: Meatpacking District</strong> — calles empedradas (Sex and the City).", l: "imp", q: "Meatpacking District New York" },
                 { t: "15:30 - 18:00", a: "🌿 BLOQUE DE ESPONTANEIDAD: tiempo libre para recuerdos, fotos pendientes o café sin dirección.", l: "opt" },
-                { t: "18:30 - 21:00", a: "🍷 <strong>PROTAGONISTA #3: CENA DE DESPEDIDA</strong> — gala familiar (ej. Carmine's, Times Square) con brindis por el viaje perfecto.", l: "must", q: "Carmine's Times Square" }
+                { t: "18:30 - 21:00", a: "🍷 <strong>PROTAGONISTA #3: CENA DE DESPEDIDA</strong> — gala familiar (ej. Carmine's, Times Square) con brindis por el viaje perfecto.", l: "must", q: "Carmine's Times Square" },
+                { t: "21:00 - 22:30", a: "✨ <strong>PLAN B — Times Square Nocturno</strong> (si quedó pendiente del Día 10). Paseo corto post-cena y regreso.", l: "opt", q: "Times Square" }
             ],
             cinema: [
                 { n: "Sex and the City (1998-2004)", d: "El Meatpacking es el barrio glam de Carrie y Samantha." },
@@ -590,12 +595,13 @@
             title: "PROTAGONISTA: Última Escapada a Times Square 🗽 + Vuelo Nocturno de Regreso",
             zone: "Valley Stream, Midtown ➔ Aeropuerto JFK",
             mapsUrl: "https://www.google.com/maps/dir/?api=1&origin=Valley+Stream+Station,+NY&destination=John+F.+Kennedy+International+Airport&waypoints=Times+Square,+NY%7CGrand+Central+Market,+NY",
+            note: "🗽 <strong>Plan A/B/C Times Square Nocturno:</strong> este es el <strong>PLAN C (respaldo final)</strong>. Si no se logró en Días 10 o 13, hoy sí o sí se hace antes del vuelo.",
             buffer: "☕ Suave toda la mañana: hasta las 15:30 no hay cronómetro real — si pide café lento en casa, ese es el plan.",
             rain: "El día es ~50% interior por diseño: Mall + Line Friends + Grand Central Market.",
             steps: [
                 { t: "09:00 - 12:30", a: "Compras finales de cierre + maletas y pesaje en Valley Stream.", l: "imp", q: "Green Acres Mall Valley Stream" },
                 { t: "12:30 - 14:00", a: "🍽️ Almuerzo relajado en Long Island.", l: "imp" },
-                { t: "15:30 - 19:30", a: "🗽 <strong>PROTAGONISTA: ÚLTIMA ESCAPADA A MANHATTAN</strong> — Line Friends & BT21 en Times Square + recuerdos comestibles en Grand Central Market.", l: "must", q: "Line Friends Times Square" },
+                { t: "15:30 - 19:30", a: "🗽 <strong>PROTAGONISTA: ÚLTIMA ESCAPADA A MANHATTAN (PLAN C)</strong> — Line Friends & BT21 en Times Square + recuerdos comestibles en Grand Central Market.", l: "must", q: "Line Friends Times Square" },
                 { t: "20:00 - 21:30", a: "LIRR de regreso a Valley Stream por el equipaje.", l: "imp" },
                 { t: "22:00 - 22:30", a: "🚖 Uber/Taxi Valley Stream ➔ JFK (15 min).", l: "imp" },
                 { t: "01:00 AM (27 sept)", a: "✈️ <strong>VUELO DE REGRESO A CASA.</strong> ¡Fin del viaje!", l: "must" }
@@ -617,7 +623,7 @@
 
     /* ============ DATOS RESTAURADOS DEL BACKUP (ruta paso a paso + lo esencial) ============ */
     const ROUTES = {
-        1: `<strong>Ruta exacta paso a paso:</strong><br>• Estación LIRR Valley Stream ➔ Grand Central Madison.<br>• Caminata al oeste por 42nd St pasando por la NY Public Library y Bryant Park.<br>• Continuar por 42nd St hasta Broadway / 7th Ave para ingresar al corazón luminoso de Times Square.`,
+        1: `<strong>Ruta exacta paso a paso:</strong><br>• Estación LIRR Valley Stream ➔ Grand Central Madison.<br>• Caminata al oeste por 42nd St pasando por la NY Public Library y Bryant Park.<br>• Cierre temprano por jet lag; Times Square nocturno principal se reserva como Plan A/B/C en Días 10, 13 y 14.`,
         2: `<strong>Ruta exacta paso a paso:</strong><br>• Salida de Penn Station ➔ Caminar a 9th Ave con 34th St (B&H Photo).<br>• Caminar al este por 34th St pasando por Macy's Herald Square y Empire State.<br>• Bajar por Broadway hasta 23rd St: Flatiron Building y Harry Potter NY.<br>• Conectar por 23rd St al oeste para subir al parque elevado High Line hacia el sur (Chelsea Market) ➔ Pier 55 & Pier 57.<br>• Metro 7 directo de Hudson Yards/34th St a Vernon Blvd-Jackson Ave en Queens (Gantry Plaza).`,
         3: `<strong>Ruta exacta paso a paso:</strong><br>• Vuelo JFK/LGA ➔ Buffalo (BUF) (1h 15m).<br>• Taxi/Uber a Fashion Outlets de Niágara y Niagara Falls State Park.<br>• Dentro de Niágara: parque 100% accesible a pie.`,
         4: `<strong>Ruta exacta paso a paso:</strong><br>• Embarque Maid of the Mist en Prospect Point.<br>• Cruzar el puente peatonal hacia Goat Island para visitar las tiendas de arce e ingresar a Cave of the Winds.<br>• Continuar caminando hacia las Tres Islas Hermanas (Three Sisters Islands).`,
@@ -634,7 +640,7 @@
     };
 
     const HIGHLIGHTS = {
-        1: "Llegada 6AM, Tanger Outlets, caminata 42nd St, Bryant Park y Times Square (Avengers, Spider-Man, Birdman)",
+        1: "Llegada 6AM, Tanger Outlets, caminata 42nd St, Bryant Park y cierre temprano por jet lag (Times Square queda flexible)",
         2: "B&H Photo, Macy's, Empire State (Elf), Flatiron (Daily Bugle), Harry Potter NY, High Line y Gantry Plaza",
         3: "Vuelo a Buffalo, Fashion Outlets, Prospect Point (Bruce Almighty, Superman II) y show nocturno de luces",
         4: "Maid of the Mist, Goat Island, The Maple Shop, Cave of the Winds (Hurricane Deck) y cena de cumpleaños",
@@ -643,11 +649,11 @@
         7: "South Street Seaport (Pier 17), The Oculus, Eataly, Bolsa de NY (Batman), Trinity Church y 9/11 Memorial",
         8: "Ferry a la Estatua de la Libertad, Ellis Island, Central Park Sur, Hotel Plaza, Bethesda y Apple Fifth Avenue",
         9: "Brooklyn Heights Promenade, Pier 2, caminata del Puente de Brooklyn, DUMBO (Gossip Girl) y Time Out Market",
-        10: "SUMMIT One Vanderbilt, Grand Central (Avengers), NBA Store, Rockefeller, Nintendo NY, LEGO y FAO Schwarz",
+        10: "SUMMIT One Vanderbilt, Grand Central (Avengers), NBA Store, Rockefeller, Nintendo NY, LEGO, FAO Schwarz y Plan A de Times Square nocturno",
         11: "AMNH (Una Noche en el Museo), MET (Gossip Girl), Harlem (Apollo, Malcolm Shabazz) y Rucker Park",
         12: "Macy's Herald Square en Herald Square o (opción B) Woodbury Common Premium Outlets",
-        13: "Starbucks Reserve Roastery, Google Store Chelsea, Meatpacking District (Sex and the City) y cena de despedida",
-        14: "Green Acres Mall, Line Friends Times Square, Grand Central Market y vuelo nocturno de regreso"
+        13: "Starbucks Reserve Roastery, Google Store Chelsea, Meatpacking District (Sex and the City), cena de despedida y Plan B de Times Square",
+        14: "Green Acres Mall, Line Friends Times Square, Grand Central Market, Plan C final nocturno y vuelo de regreso"
     };
 
     function moviesData() { return [
@@ -690,7 +696,7 @@
     ];
 
     const foodFull = [
-        { name: "Los Tacos No. 1", cat: "Tacos · Times Square", link: "Los+Tacos+No+1+Times+Square", info: "229 W 43rd St. Encaja Días 1, 12 y 14." },
+        { name: "Los Tacos No. 1", cat: "Tacos · Times Square", link: "Los+Tacos+No+1+Times+Square", info: "229 W 43rd St. Encaja Días 10, 12, 13 y 14." },
         { name: "Joe's Pizza", cat: "Pizza · Greenwich Village", link: "Joe%27s+Pizza+7+Carmine+St+New+York", info: "7 Carmine St. Escena de Spider-Man 2 ('Pizza Time!')." },
         { name: "7th Street Burger", cat: "Burgers · multi-sucursal", link: "7th+Street+Burger+New+York", info: "Times Sq (485 7th Ave), Bryant Park (11 W 42nd), SoHo (250 Mulberry), Chelsea (171 W 23rd) y UWS (424 Amsterdam)." },
         { name: "Raising Cane's", cat: "Pollo · multi-sucursal", link: "Raising+Cane%27s+New+York", info: "Times Sq (1501 Broadway), Penn (1 Penn Plaza), Harlem (124 W 125th)." },
@@ -727,7 +733,7 @@
         { name: "🏀 NBA Store", lat: 40.7551, lng: -73.9791, type: "shopping", desc: "Día 10" },
         { name: "🏀 The Cage (W 4th)", lat: 40.7308, lng: -74.0007, type: "basketball", desc: "Día 6: streetball" },
         { name: "🏀 Rucker Park", lat: 40.8296, lng: -73.9363, type: "basketball", desc: "Día 11: Uncle Drew" },
-        { name: "Times Square", lat: 40.7580, lng: -73.9855, type: "attraction", desc: "Días 1 & 14" },
+        { name: "Times Square", lat: 40.7580, lng: -73.9855, type: "attraction", desc: "Días 10, 13 y 14 (Plan A/B/C nocturno)" },
         { name: "🗽 Estatua de la Libertad", lat: 40.6973, lng: -74.0447, type: "attraction", desc: "Día 8: X-Men" },
         { name: "🌉 Puente de Brooklyn & DUMBO", lat: 40.7061, lng: -73.9969, type: "attraction", desc: "Día 9: Gossip Girl" },
         { name: "🌊 Cataratas del Niágara", lat: 43.0828, lng: -79.0742, type: "attraction", desc: "Días 3–5" }
